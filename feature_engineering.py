@@ -1,6 +1,14 @@
 import pandas as pd
 
 def feature_engineering(data):
+    # Check if data is a dictionary, if so, convert to DataFrame
+    if isinstance(data, dict):
+        data = pd.DataFrame([data])
+    
+    # Ensure 'data' is now a DataFrame
+    if not isinstance(data, pd.DataFrame):
+        raise TypeError("Input data must be a DataFrame or a dictionary")
+    
     # 1. Body Mass Index (BMI) Category
     def bmi_category(bmi):
         if bmi < 18.5:
