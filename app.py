@@ -23,21 +23,35 @@ center_content()
 st.markdown('<div class="container"><div class="header"><h1>Stroke Prediction App</h1></div>', unsafe_allow_html=True)
 
 # Bootstrap grid layout for input fields
-col1, col2 = st.columns(2)
+form_data = {
+    'Age': ('age', 'number_input', 0, 120, 30),
+    'Hypertension': ('hypertension', 'selectbox', [0, 1]),
+    'Ever Married': ('ever_married', 'selectbox', ['No', 'Yes']),
+    'Average Glucose Level': ('avg_glucose_level', 'number_input', 0.0, 200.0, 100.0),
+    'Smoking Status': ('smoking_status', 'selectbox', ['Unknown', 'formerly smoked', 'never smoked', 'smokes']),
+    'Gender': ('gender', 'selectbox', ['Male', 'Female']),
+    'Heart Disease': ('heart_disease', 'selectbox', [0, 1]),
+    'Work Type': ('work_type', 'selectbox', ['Govt_job', 'Never_worked', 'Private', 'Self_employed']),
+    'Residence Type': ('Residence_type', 'selectbox', ['Rural', 'Urban']),
+    'BMI': ('bmi', 'number_input', 0.0, 50.0, 25.0),
+}
 
-with col1:
-    age = st.number_input('Age', min_value=0, max_value=120, value=30)
-    hypertension = st.selectbox('Hypertension', [0, 1])
-    ever_married = st.selectbox('Ever Married', ['No', 'Yes'])
-    avg_glucose_level = st.number_input('Average Glucose Level', min_value=0.0, value=100.0)
-    smoking_status = st.selectbox('Smoking Status', ['Unknown', 'formerly smoked', 'never smoked', 'smokes'])
+# Create form layout
+with st.form(key='input_form'):
+    st.markdown('<div class="form-row">', unsafe_allow_html=True)
+    for i, (label, (var_name, input_type, *args)) in enumerate(form_data.items()):
+        if i % 3 == 0 and i > 0:
+            st.markdown('</div><div class="form-row">', unsafe_allow_html=True)
+        with st.beta_expander(label, expanded=True):
+            if input_type == 'number_input':
+                locals()[var_name] = st.number_input(label, min_value=args[0], max_value=args[1], value=args[2])
+            elif input_type == 'selectbox':
+                locals()[var_name] = st.selectbox(label, args[0])
+            # Add other input types if needed
+    st.markdown('</div>', unsafe_allow_html=True)
 
-with col2:
-    gender = st.selectbox('Gender', ['Male', 'Female'])
-    heart_disease = st.selectbox('Heart Disease', [0, 1])
-    work_type = st.selectbox('Work Type', ['Govt_job', 'Never_worked', 'Private', 'Self_employed'])
-    Residence_type = st.selectbox('Residence Type', ['Rural', 'Urban'])
-    bmi = st.number_input('BMI', min_value=0.0, value=25.0)
+    # Submit button
+    submit_button = st.button(label='Predict')
 
 # Prepare input data for prediction
 features = {
@@ -56,15 +70,11 @@ features = {
 # Apply feature engineering
 input_data = feature_engineering(features)
 
-# Debug: Check the shape and type of input_data
-st.write(f"Type of Input Data: {type(input_data)}")
-st.write(f"Shape of Input Data: {np.array(input_data).shape}")
-
 # Ensure input_data is a 2D array
 input_data = np.array(input_data).reshape(1, -1)  # Flatten and reshape to (1, 40)
 
 # Prediction
-if st.button('Predict', key='predict_button'):
+if submit_button:
     try:
         prediction = model.predict(input_data)
         result = 'Stroke' if prediction[0] == 1 else 'No Stroke'
