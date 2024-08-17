@@ -42,28 +42,104 @@ def center_content():
         height: 100vh;
     }
     .container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+        width: 80%;
+        margin: auto;
     }
     </style>
     """, unsafe_allow_html=True)
 
-    st.markdown('<div class="center">', unsafe_allow_html=True)
     st.markdown('<div class="container">', unsafe_allow_html=True)
 
 def end_center_content():
-    st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 # Center content
 center_content()
 
 # App title
-st.title('Stroke Prediction App')
+st.markdown('<h1 class="text-center mb-4">Stroke Prediction App</h1>', unsafe_allow_html=True)
 
-# User input
-age = st.number_input('Age', min_value=0, max_value=120, value=30, format="%d")
+# Bootstrap grid layout for input fields
+st.markdown("""
+<div class="row">
+    <div class="col-md-6">
+        <label for="age">Age</label>
+        <input type="number" class="form-control" id="age" value="30">
+    </div>
+    <div class="col-md-6">
+        <label for="gender">Gender</label>
+        <select class="form-control" id="gender">
+            <option>Male</option>
+            <option>Female</option>
+        </select>
+    </div>
+</div>
+<div class="row mt-3">
+    <div class="col-md-6">
+        <label for="hypertension">Hypertension</label>
+        <select class="form-control" id="hypertension">
+            <option>0</option>
+            <option>1</option>
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label for="heart_disease">Heart Disease</label>
+        <select class="form-control" id="heart_disease">
+            <option>0</option>
+            <option>1</option>
+        </select>
+    </div>
+</div>
+<div class="row mt-3">
+    <div class="col-md-6">
+        <label for="ever_married">Ever Married</label>
+        <select class="form-control" id="ever_married">
+            <option>No</option>
+            <option>Yes</option>
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label for="work_type">Work Type</label>
+        <select class="form-control" id="work_type">
+            <option>Govt_job</option>
+            <option>Never_worked</option>
+            <option>Private</option>
+            <option>Self_employed</option>
+        </select>
+    </div>
+</div>
+<div class="row mt-3">
+    <div class="col-md-6">
+        <label for="Residence_type">Residence Type</label>
+        <select class="form-control" id="Residence_type">
+            <option>Rural</option>
+            <option>Urban</option>
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label for="avg_glucose_level">Average Glucose Level</label>
+        <input type="number" class="form-control" id="avg_glucose_level" value="100.0">
+    </div>
+</div>
+<div class="row mt-3">
+    <div class="col-md-6">
+        <label for="bmi">BMI</label>
+        <input type="number" class="form-control" id="bmi" value="25.0">
+    </div>
+    <div class="col-md-6">
+        <label for="smoking_status">Smoking Status</label>
+        <select class="form-control" id="smoking_status">
+            <option>Unknown</option>
+            <option>formerly smoked</option>
+            <option>never smoked</option>
+            <option>smokes</option>
+        </select>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# Convert input data
+age = st.number_input('Age', min_value=0, max_value=120, value=30)
 gender = st.selectbox('Gender', ['Male', 'Female'])
 hypertension = st.selectbox('Hypertension', [0, 1])
 heart_disease = st.selectbox('Heart Disease', [0, 1])
@@ -92,7 +168,12 @@ input_data = feature_engineering({
 if st.button('Predict'):
     try:
         prediction = model.predict(input_data)
-        st.write(f"Prediction: {'Stroke' if prediction[0] == 1 else 'No Stroke'}")
+        st.markdown(f"""
+        <div class="alert alert-primary" role="alert">
+            <h4 class="alert-heading">Prediction Result</h4>
+            <p class="mb-0">The prediction is: <strong>{'Stroke' if prediction[0] == 1 else 'No Stroke'}</strong></p>
+        </div>
+        """, unsafe_allow_html=True)
     except Exception as e:
         st.error(f"Error making prediction: {e}")
 
