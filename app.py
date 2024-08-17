@@ -20,7 +20,7 @@ def center_content():
 center_content()
 
 # App title
-st.markdown('<div class="header"><h1>Stroke Prediction App</h1></div>', unsafe_allow_html=True)
+st.markdown('<div class="container"><div class="header"><h1>Stroke Prediction App</h1></div>', unsafe_allow_html=True)
 
 # Bootstrap grid layout for input fields
 col1, col2 = st.columns(2)
