@@ -135,18 +135,28 @@ def feature_engineering(data):
     data['work_type_risk_factor_interaction'] = data['work_type'] * data['risk_factor']
 
     # Reorder columns to match model
-    expected_features = [
-        'bmi_category', 'glucose_category', 'age_bmi_interaction', 'married_work_interaction',
-        'high_risk_indicators', 'age_group', 'risk_factor', 'glucose_bmi_ratio',
-        'married_working', 'urban_smoker', 'age_work_interaction', 'smoking_residence_interaction',
-        'age_hypertension_interaction', 'age_heart_disease_interaction', 'glucose_hypertension_interaction',
-        'glucose_heart_disease_interaction', 'bmi_hypertension_interaction', 'bmi_heart_disease_interaction',
-        'age_group_glucose_bmi_ratio', 'glucose_age_group_interaction', 'age_glucose_interaction',
-        'bmi_glucose_interaction', 'hypertension_glucose_category_interaction', 'heart_disease_glucose_category_interaction',
-        'age_group_glucose_category_interaction', 'bmi_category_glucose_category_interaction',
-        'age_group_bmi_category_interaction', 'age_high_risk_interaction', 'glucose_bmi_ratio_risk_factor_interaction',
-        'work_type_risk_factor_interaction'
-    ]
+    # Define the feature names expected by the model
+expected_features = ['age', 'gender', 'hypertension', 'heart_disease', 'ever_married', 
+                     'work_type', 'Residence_type', 'avg_glucose_level', 'bmi', 
+                     'smoking_status', 'bmi_category', 'glucose_category', 
+                     'age_bmi_interaction', 'married_work_interaction', 
+                     'high_risk_indicators', 'age_group', 'risk_factor', 
+                     'glucose_bmi_ratio', 'married_working', 'urban_smoker', 
+                     'age_work_interaction', 'smoking_residence_interaction', 
+                     'age_hypertension_interaction', 'age_heart_disease_interaction', 
+                     'glucose_hypertension_interaction', 'glucose_heart_disease_interaction', 
+                     'bmi_hypertension_interaction', 'bmi_heart_disease_interaction', 
+                     'age_group_glucose_bmi_ratio', 'glucose_age_group_interaction', 
+                     'age_glucose_interaction', 'bmi_glucose_interaction', 
+                     'hypertension_glucose_category_interaction', 
+                     'heart_disease_glucose_category_interaction', 
+                     'age_group_glucose_category_interaction', 
+                     'bmi_category_glucose_category_interaction', 
+                     'age_group_bmi_category_interaction', 
+                     'age_high_risk_interaction', 
+                     'glucose_bmi_ratio_risk_factor_interaction', 
+                     'work_type_risk_factor_interaction']
+
     
     for feature in expected_features:
         if feature not in data.columns:
