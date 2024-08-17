@@ -85,10 +85,10 @@ if submit_button:
         gbm_prob = gbm_model.predict_proba(input_data)[0][1]
 
         predictions = {
-            'CatBoost Model': 'Stroke' if catboost_prob > 0.5 else 'No Stroke',
-            'LightGBM Model': 'Stroke' if lgb_prob > 0.5 else 'No Stroke',
-            'XGBoost Model': 'Stroke' if xgb_prob > 0.5 else 'No Stroke',
-            'Gradient Boosting Model': 'Stroke' if gbm_prob > 0.01 else 'No Stroke'
+            'CatBoost Model': 'Stroke' if catboost_prob > 0.2 else 'No Stroke',
+            'LightGBM Model': 'Stroke' if lgb_prob > 0.2 else 'No Stroke',
+            'XGBoost Model': 'Stroke' if xgb_prob > 0.2 else 'No Stroke',
+            'Gradient Boosting Model': 'Stroke' if gbm_prob > 0.2 else 'No Stroke'
         }
 
         # Display predictions side by side using columns
