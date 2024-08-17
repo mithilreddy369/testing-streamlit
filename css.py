@@ -6,7 +6,9 @@ def add_custom_css():
     /* General Body Styles */
     body {
         font-family: 'Arial', sans-serif;
-        background-color: #f8f9fa;
+        background-color: #f0f2f6;
+        margin: 0;
+        padding: 0;
     }
 
     /* Container Styles */
@@ -16,7 +18,8 @@ def add_custom_css():
         padding: 20px;
         background-color: #ffffff;
         border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        margin-top: 20px; /* Adjust margin top to avoid title being too low */
     }
 
     /* Header Styles */
@@ -25,7 +28,7 @@ def add_custom_css():
         margin-bottom: 30px;
     }
     .header h1 {
-        color: #007bff;
+        color: #0056b3;
         font-size: 2.5em;
         font-weight: 700;
     }
@@ -46,20 +49,21 @@ def add_custom_css():
         border-radius: 4px;
     }
     .form-group input:focus, .form-group select:focus {
-        border-color: #007bff;
+        border-color: #0056b3;
         box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
     }
 
     /* Button Styles */
     .btn-primary {
-        background-color: #007bff;
-        border-color: #007bff;
+        background-color: #0056b3;
+        border-color: #0056b3;
         color: #ffffff;
         font-weight: 600;
+        border-radius: 4px;
     }
     .btn-primary:hover {
-        background-color: #0056b3;
-        border-color: #004085;
+        background-color: #003d7a;
+        border-color: #002a5e;
     }
 
     /* Alert Styles */
