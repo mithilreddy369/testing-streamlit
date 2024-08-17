@@ -3,11 +3,24 @@ import pandas as pd
 import joblib
 from sklearn.preprocessing import StandardScaler
 
-# Load the model
-model = joblib.load('model.pkl')
+# Load the model with error handling
+try:
+    model = joblib.load('model.pkl')
+except FileNotFoundError:
+    st.error("Model file not found. Please upload the model file.")
+    st.stop()
+except Exception as e:
+    st.error(f"Error loading model: {e}")
+    st.stop()
 
 # Load the scaler if you used one during training
-scaler = joblib.load('scaler.pkl')
+try:
+    scaler = joblib.load('scaler.pkl')
+except FileNotFoundError:
+    scaler = None
+except Exception as e:
+    st.error(f"Error loading scaler: {e}")
+    st.stop()
 
 # Define functions for feature engineering
 def bmi_category(bmi):
@@ -42,78 +55,82 @@ def age_group(age):
 st.title('Stroke Prediction App')
 
 # Collect user inputs
-st.sidebar.header('User Input Parameters')
+st.sidebar.header('User Input')
 
-def get_user_input():
-    gender = st.sidebar.selectbox('Gender', [0, 1])  # Assuming 0 for Male, 1 for Female
-    age = st.sidebar.slider('Age', 0, 100, 50)
-    hypertension = st.sidebar.selectbox('Hypertension', [0, 1])
-    heart_disease = st.sidebar.selectbox('Heart Disease', [0, 1])
-    ever_married = st.sidebar.selectbox('Ever Married', [0, 1])
-    work_type = st.sidebar.selectbox('Work Type', [0, 1, 2, 3])
-    residence_type = st.sidebar.selectbox('Residence Type', [0, 1])
-    avg_glucose_level = st.sidebar.slider('Average Glucose Level', 0.0, 300.0, 100.0)
-    bmi = st.sidebar.slider('BMI', 0.0, 50.0, 25.0)
-    smoking_status = st.sidebar.selectbox('Smoking Status', [0, 1, 2, 3])
+age = st.sidebar.number_input('Age', min_value=0, max_value=120, value=30)
+gender = st.sidebar.selectbox('Gender', ['Male', 'Female'])
+hypertension = st.sidebar.selectbox('Hypertension', ['No', 'Yes'])
+heart_disease = st.sidebar.selectbox('Heart Disease', ['No', 'Yes'])
+ever_married = st.sidebar.selectbox('Ever Married', ['No', 'Yes'])
+work_type = st.sidebar.selectbox('Work Type', ['Govt_job', 'Never_worked', 'Private', 'Self_employed'])
+residence_type = st.sidebar.selectbox('Residence Type', ['Rural', 'Urban'])
+avg_glucose_level = st.sidebar.number_input('Average Glucose Level', min_value=0.0, value=70.0)
+bmi = st.sidebar.number_input('BMI', min_value=0.0, value=22.0)
+smoking_status = st.sidebar.selectbox('Smoking Status', ['Unknown', 'formerly smoked', 'never smoked', 'smokes'])
 
-    # Create a DataFrame
-    data = pd.DataFrame({
-        'gender': [gender],
-        'age': [age],
-        'hypertension': [hypertension],
-        'heart_disease': [heart_disease],
-        'ever_married': [ever_married],
-        'work_type': [work_type],
-        'Residence_type': [residence_type],
-        'avg_glucose_level': [avg_glucose_level],
-        'bmi': [bmi],
-        'smoking_status': [smoking_status]
-    })
+# Convert user input to DataFrame
+input_data = pd.DataFrame({
+    'age': [age],
+    'gender': [1 if gender == 'Female' else 0],
+    'hypertension': [1 if hypertension == 'Yes' else 0],
+    'heart_disease': [1 if heart_disease == 'Yes' else 0],
+    'ever_married': [1 if ever_married == 'Yes' else 0],
+    'work_type': [['Govt_job', 'Never_worked', 'Private', 'Self_employed'].index(work_type)],
+    'Residence_type': [['Rural', 'Urban'].index(residence_type)],
+    'avg_glucose_level': [avg_glucose_level],
+    'bmi': [bmi],
+    'smoking_status': [['Unknown', 'formerly smoked', 'never smoked', 'smokes'].index(smoking_status)]
+})
 
-    # Feature engineering
-    data['bmi_category'] = data['bmi'].apply(bmi_category)
-    data['glucose_category'] = data['avg_glucose_level'].apply(glucose_category)
-    data['age_group'] = data['age'].apply(age_group)
-    data['age_bmi_interaction'] = data['age'] * data['bmi']
-    data['married_work_interaction'] = data['ever_married'] * data['work_type']
-    data['high_risk_indicators'] = (
-        (data['hypertension'] == 1) |
-        (data['heart_disease'] == 1) |
-        (data['glucose_category'] == 3) |
-        (data['bmi_category'] == 3)
-    ).astype(int)
-    data['risk_factor'] = data['hypertension'] + data['heart_disease'] + data['age_group']
-    data['glucose_bmi_ratio'] = data['avg_glucose_level'] / data['bmi']
-    data['married_working'] = data['ever_married'] * (data['work_type'] != 1).astype(int)
-    data['urban_smoker'] = data['Residence_type'] * (data['smoking_status'] == 3).astype(int)
-    data['age_work_interaction'] = data['age_group'] * data['work_type']
-    data['smoking_residence_interaction'] = data['smoking_status'] * data['Residence_type']
-    data['age_hypertension_interaction'] = data['age'] * data['hypertension']
-    data['age_heart_disease_interaction'] = data['age'] * data['heart_disease']
-    data['glucose_hypertension_interaction'] = data['avg_glucose_level'] * data['hypertension']
-    data['glucose_heart_disease_interaction'] = data['avg_glucose_level'] * data['heart_disease']
-    data['bmi_hypertension_interaction'] = data['bmi'] * data['hypertension']
-    data['bmi_heart_disease_interaction'] = data['bmi'] * data['heart_disease']
-    data['age_group_glucose_bmi_ratio'] = data['age_group'] * data['glucose_bmi_ratio']
-    data['glucose_age_group_interaction'] = data['avg_glucose_level'] * data['age_group']
-    data['age_high_risk_interaction'] = data['age'] * data['high_risk_indicators']
-    data['glucose_bmi_ratio_risk_factor_interaction'] = data['glucose_bmi_ratio'] * data['risk_factor']
-    data['work_type_risk_factor_interaction'] = data['work_type'] * data['risk_factor']
-    
-    # Return the prepared DataFrame
-    return data
+# Feature engineering
+input_data['bmi_category'] = input_data['bmi'].apply(bmi_category)
+input_data['glucose_category'] = input_data['avg_glucose_level'].apply(glucose_category)
+input_data['age_bmi_interaction'] = input_data['age'] * input_data['bmi']
+input_data['married_work_interaction'] = input_data['ever_married'] * input_data['work_type']
+input_data['high_risk_indicators'] = (
+    (input_data['hypertension'] == 1) |
+    (input_data['heart_disease'] == 1) |
+    (input_data['glucose_category'] == 3) |
+    (input_data['bmi_category'] == 3)
+).astype(int)
+input_data['age_group'] = input_data['age'].apply(age_group)
+input_data['risk_factor'] = input_data['hypertension'] + input_data['heart_disease'] + input_data['age_group']
+input_data['glucose_bmi_ratio'] = input_data['avg_glucose_level'] / input_data['bmi']
+input_data['married_working'] = input_data['ever_married'] * (input_data['work_type'] != 1).astype(int)
+input_data['urban_smoker'] = input_data['Residence_type'] * (input_data['smoking_status'] == 3).astype(int)
+input_data['age_work_interaction'] = input_data['age_group'] * input_data['work_type']
+input_data['smoking_residence_interaction'] = input_data['smoking_status'] * input_data['Residence_type']
+input_data['age_hypertension_interaction'] = input_data['age'] * input_data['hypertension']
+input_data['age_heart_disease_interaction'] = input_data['age'] * input_data['heart_disease']
+input_data['glucose_hypertension_interaction'] = input_data['avg_glucose_level'] * input_data['hypertension']
+input_data['glucose_heart_disease_interaction'] = input_data['avg_glucose_level'] * input_data['heart_disease']
+input_data['bmi_hypertension_interaction'] = input_data['bmi'] * input_data['hypertension']
+input_data['bmi_heart_disease_interaction'] = input_data['bmi'] * input_data['heart_disease']
+input_data['age_group_glucose_bmi_ratio'] = input_data['age_group'] * input_data['glucose_bmi_ratio']
+input_data['glucose_age_group_interaction'] = input_data['avg_glucose_level'] * input_data['age_group']
+input_data['age_glucose_interaction'] = input_data['age'] * input_data['avg_glucose_level']
+input_data['bmi_glucose_interaction'] = input_data['bmi'] * input_data['avg_glucose_level']
+input_data['hypertension_glucose_category_interaction'] = input_data['hypertension'] * input_data['glucose_category']
+input_data['heart_disease_glucose_category_interaction'] = input_data['heart_disease'] * input_data['glucose_category']
+input_data['age_group_glucose_category_interaction'] = input_data['age_group'] * input_data['glucose_category']
+input_data['bmi_category_glucose_category_interaction'] = input_data['bmi_category'] * input_data['glucose_category']
+input_data['age_group_bmi_category_interaction'] = input_data['age_group'] * input_data['bmi_category']
+input_data['age_high_risk_interaction'] = input_data['age'] * input_data['high_risk_indicators']
+input_data['glucose_bmi_ratio_risk_factor_interaction'] = input_data['glucose_bmi_ratio'] * input_data['risk_factor']
+input_data['work_type_risk_factor_interaction'] = input_data['work_type'] * input_data['risk_factor']
 
-user_input = get_user_input()
-
-# Display user input
-st.subheader('User Input:')
-st.write(user_input)
-
-# Scale features if necessary
-scaled_features = scaler.transform(user_input)
+# Scale features if scaler is available
+if scaler:
+    scaled_features = scaler.transform(input_data)
+else:
+    scaled_features = input_data
 
 # Make prediction
-prediction = model.predict(scaled_features)
+try:
+    prediction = model.predict(scaled_features)
+except Exception as e:
+    st.error(f"Error making prediction: {e}")
+    st.stop()
 
 # Display result
 st.subheader('Prediction:')
