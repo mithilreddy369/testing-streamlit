@@ -79,17 +79,16 @@ input_data = np.array(input_data).reshape(1, -1)  # Flatten and reshape to (1, -
 if submit_button:
     try:
         # Get predictions from all models
-        # Get probabilities from all models (assuming the models output probabilities)
         catboost_prob = catboost_model.predict_proba(input_data)[0][1]  # Probability of "Stroke" class
         lgb_prob = lgb_model.predict_proba(input_data)[0][1]
         xgb_prob = xgb_model.predict_proba(input_data)[0][1]
         gbm_prob = gbm_model.predict_proba(input_data)[0][1]
 
         predictions = {
-            'CatBoost Model': 'Stroke' if catboost_pred == 1 else 'No Stroke',
-            'LightGBM Model': 'Stroke' if lgb_pred == 1 else 'No Stroke',
-            'XGBoost Model': 'Stroke' if xgb_pred == 1 else 'No Stroke',
-            'Gradient Boosting Model': 'Stroke' if gbm_pred == 1 else 'No Stroke'
+            'CatBoost Model': 'Stroke' if catboost_prob > 0.5 else 'No Stroke',
+            'LightGBM Model': 'Stroke' if lgb_prob > 0.5 else 'No Stroke',
+            'XGBoost Model': 'Stroke' if xgb_prob > 0.5 else 'No Stroke',
+            'Gradient Boosting Model': 'Stroke' if gbm_prob > 0.5 else 'No Stroke'
         }
 
         # Display predictions side by side using columns
