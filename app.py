@@ -79,10 +79,11 @@ input_data = np.array(input_data).reshape(1, -1)  # Flatten and reshape to (1, -
 if submit_button:
     try:
         # Get predictions from all models
-        catboost_pred = catboost_model.predict(input_data)[0]
-        lgb_pred = lgb_model.predict(input_data)[0]
-        xgb_pred = xgb_model.predict(input_data)[0]
-        gbm_pred = gbm_model.predict(input_data)[0]
+        # Get probabilities from all models (assuming the models output probabilities)
+        catboost_prob = catboost_model.predict_proba(input_data)[0][1]  # Probability of "Stroke" class
+        lgb_prob = lgb_model.predict_proba(input_data)[0][1]
+        xgb_prob = xgb_model.predict_proba(input_data)[0][1]
+        gbm_prob = gbm_model.predict_proba(input_data)[0][1]
 
         predictions = {
             'CatBoost Model': 'Stroke' if catboost_pred == 1 else 'No Stroke',
