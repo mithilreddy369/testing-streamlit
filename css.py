@@ -9,23 +9,30 @@ def add_custom_css():
         background-color: #f0f2f6;
         margin: 0;
         padding: 0;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     /* Container Styles */
     .container {
         width: 80%;
-        margin: auto;
+        max-width: 900px; /* Ensure it does not become too wide */
         padding: 20px;
         background-color: #ffffff;
         border-radius: 8px;
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        margin-top: 20px; /* Adjust margin top to avoid title being too low */
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        box-sizing: border-box;
     }
 
     /* Header Styles */
     .header {
         text-align: center;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
     }
     .header h1 {
         color: #0056b3;
@@ -60,6 +67,7 @@ def add_custom_css():
         color: #ffffff;
         font-weight: 600;
         border-radius: 4px;
+        padding: 10px 20px;
     }
     .btn-primary:hover {
         background-color: #003d7a;
