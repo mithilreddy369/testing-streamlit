@@ -1,3 +1,5 @@
+import pandas as pd
+
 def feature_engineering(data):
   # 1. Body Mass Index (BMI) Category
 def bmi_category(bmi):
