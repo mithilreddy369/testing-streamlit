@@ -35,12 +35,6 @@ def center_content():
     st.markdown("""
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
-    .center {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    }
     .container {
         width: 80%;
         margin: auto;
@@ -60,95 +54,21 @@ center_content()
 st.markdown('<h1 class="text-center mb-4">Stroke Prediction App</h1>', unsafe_allow_html=True)
 
 # Bootstrap grid layout for input fields
-st.markdown("""
-<div class="row">
-    <div class="col-md-6">
-        <label for="age">Age</label>
-        <input type="number" class="form-control" id="age" value="30">
-    </div>
-    <div class="col-md-6">
-        <label for="gender">Gender</label>
-        <select class="form-control" id="gender">
-            <option>Male</option>
-            <option>Female</option>
-        </select>
-    </div>
-</div>
-<div class="row mt-3">
-    <div class="col-md-6">
-        <label for="hypertension">Hypertension</label>
-        <select class="form-control" id="hypertension">
-            <option>0</option>
-            <option>1</option>
-        </select>
-    </div>
-    <div class="col-md-6">
-        <label for="heart_disease">Heart Disease</label>
-        <select class="form-control" id="heart_disease">
-            <option>0</option>
-            <option>1</option>
-        </select>
-    </div>
-</div>
-<div class="row mt-3">
-    <div class="col-md-6">
-        <label for="ever_married">Ever Married</label>
-        <select class="form-control" id="ever_married">
-            <option>No</option>
-            <option>Yes</option>
-        </select>
-    </div>
-    <div class="col-md-6">
-        <label for="work_type">Work Type</label>
-        <select class="form-control" id="work_type">
-            <option>Govt_job</option>
-            <option>Never_worked</option>
-            <option>Private</option>
-            <option>Self_employed</option>
-        </select>
-    </div>
-</div>
-<div class="row mt-3">
-    <div class="col-md-6">
-        <label for="Residence_type">Residence Type</label>
-        <select class="form-control" id="Residence_type">
-            <option>Rural</option>
-            <option>Urban</option>
-        </select>
-    </div>
-    <div class="col-md-6">
-        <label for="avg_glucose_level">Average Glucose Level</label>
-        <input type="number" class="form-control" id="avg_glucose_level" value="100.0">
-    </div>
-</div>
-<div class="row mt-3">
-    <div class="col-md-6">
-        <label for="bmi">BMI</label>
-        <input type="number" class="form-control" id="bmi" value="25.0">
-    </div>
-    <div class="col-md-6">
-        <label for="smoking_status">Smoking Status</label>
-        <select class="form-control" id="smoking_status">
-            <option>Unknown</option>
-            <option>formerly smoked</option>
-            <option>never smoked</option>
-            <option>smokes</option>
-        </select>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+col1, col2 = st.columns(2)
 
-# Convert input data
-age = st.number_input('Age', min_value=0, max_value=120, value=30)
-gender = st.selectbox('Gender', ['Male', 'Female'])
-hypertension = st.selectbox('Hypertension', [0, 1])
-heart_disease = st.selectbox('Heart Disease', [0, 1])
-ever_married = st.selectbox('Ever Married', ['No', 'Yes'])
-work_type = st.selectbox('Work Type', ['Govt_job', 'Never_worked', 'Private', 'Self_employed'])
-Residence_type = st.selectbox('Residence Type', ['Rural', 'Urban'])
-avg_glucose_level = st.number_input('Average Glucose Level', min_value=0.0, value=100.0)
-bmi = st.number_input('BMI', min_value=0.0, value=25.0)
-smoking_status = st.selectbox('Smoking Status', ['Unknown', 'formerly smoked', 'never smoked', 'smokes'])
+with col1:
+    age = st.number_input('Age', min_value=0, max_value=120, value=30)
+    hypertension = st.selectbox('Hypertension', [0, 1])
+    ever_married = st.selectbox('Ever Married', ['No', 'Yes'])
+    avg_glucose_level = st.number_input('Average Glucose Level', min_value=0.0, value=100.0)
+    smoking_status = st.selectbox('Smoking Status', ['Unknown', 'formerly smoked', 'never smoked', 'smokes'])
+
+with col2:
+    gender = st.selectbox('Gender', ['Male', 'Female'])
+    heart_disease = st.selectbox('Heart Disease', [0, 1])
+    work_type = st.selectbox('Work Type', ['Govt_job', 'Never_worked', 'Private', 'Self_employed'])
+    Residence_type = st.selectbox('Residence Type', ['Rural', 'Urban'])
+    bmi = st.number_input('BMI', min_value=0.0, value=25.0)
 
 # Prepare input data for prediction
 input_data = feature_engineering({
@@ -167,11 +87,12 @@ input_data = feature_engineering({
 # Prediction
 if st.button('Predict'):
     try:
-        prediction = model.predict(input_data)
+        prediction = model.predict([input_data])
+        result = 'Stroke' if prediction[0] == 1 else 'No Stroke'
         st.markdown(f"""
-        <div class="alert alert-primary" role="alert">
+        <div class="alert alert-primary mt-4" role="alert">
             <h4 class="alert-heading">Prediction Result</h4>
-            <p class="mb-0">The prediction is: <strong>{'Stroke' if prediction[0] == 1 else 'No Stroke'}</strong></p>
+            <p class="mb-0">The prediction is: <strong>{result}</strong></p>
         </div>
         """, unsafe_allow_html=True)
     except Exception as e:
