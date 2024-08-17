@@ -1,8 +1,11 @@
-# app.py
 import streamlit as st
 import numpy as np
 import joblib
 from feature_engineering import feature_engineering  # Import the function
+from css import add_custom_css  # Import the custom CSS function
+
+# Apply custom CSS
+add_custom_css()
 
 # Load the model
 model = joblib.load('model.pkl')
@@ -11,24 +14,13 @@ model = joblib.load('model.pkl')
 def center_content():
     st.markdown("""
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-    .container {
-        width: 80%;
-        margin: auto;
-    }
-    </style>
     """, unsafe_allow_html=True)
-
-    st.markdown('<div class="container">', unsafe_allow_html=True)
-
-def end_center_content():
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # Center content
 center_content()
 
 # App title
-st.markdown('<h1 class="text-center mb-4">Stroke Prediction App</h1>', unsafe_allow_html=True)
+st.markdown('<div class="header"><h1>Stroke Prediction App</h1></div>', unsafe_allow_html=True)
 
 # Bootstrap grid layout for input fields
 col1, col2 = st.columns(2)
@@ -72,7 +64,7 @@ st.write(f"Shape of Input Data: {np.array(input_data).shape}")
 input_data = np.array(input_data).reshape(1, -1)  # Flatten and reshape to (1, 40)
 
 # Prediction
-if st.button('Predict'):
+if st.button('Predict', key='predict_button'):
     try:
         prediction = model.predict(input_data)
         result = 'Stroke' if prediction[0] == 1 else 'No Stroke'
@@ -86,4 +78,4 @@ if st.button('Predict'):
         st.error(f"Error making prediction: {e}")
 
 # End centered content
-end_center_content()
+st.markdown('</div>', unsafe_allow_html=True)
