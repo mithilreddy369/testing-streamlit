@@ -71,7 +71,6 @@ avg_glucose_level = st.number_input('Average Glucose Level', min_value=0.0, valu
 bmi = st.number_input('BMI', min_value=0.0, value=25.0)
 smoking_status = st.selectbox('Smoking Status', ['Unknown', 'formerly smoked', 'never smoked', 'smokes'])
 
-# Feature engineering
 def feature_engineering(data):
     def bmi_category(bmi):
         if bmi < 18.5:
@@ -93,6 +92,7 @@ def feature_engineering(data):
         else:
             return 3
 
+    # Feature engineering
     data['bmi_category'] = bmi_category(data['bmi'])
     data['glucose_category'] = glucose_category(data['avg_glucose_level'])
     data['age_bmi_interaction'] = data['age'] * data['bmi']
@@ -136,7 +136,9 @@ def feature_engineering(data):
         if feature not in df.columns:
             df[feature] = 0  # Add missing features with default value
     df = df[expected_features]
+    
     return df
+
 
 input_data = feature_engineering({
     'age': age,
