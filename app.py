@@ -39,19 +39,18 @@ form_data = {
 # Create form layout
 with st.form(key='input_form'):
     st.markdown('<div class="form-row">', unsafe_allow_html=True)
+    cols = st.columns(3)  # Create 3 columns per row
     for i, (label, (var_name, input_type, *args)) in enumerate(form_data.items()):
-        if i % 3 == 0 and i > 0:
-            st.markdown('</div><div class="form-row">', unsafe_allow_html=True)
-        with st.beta_expander(label, expanded=True):
+        with cols[i % 3]:  # Ensure 3 columns per row
             if input_type == 'number_input':
                 locals()[var_name] = st.number_input(label, min_value=args[0], max_value=args[1], value=args[2])
             elif input_type == 'selectbox':
                 locals()[var_name] = st.selectbox(label, args[0])
-            # Add other input types if needed
+
     st.markdown('</div>', unsafe_allow_html=True)
 
     # Submit button
-    submit_button = st.button(label='Predict')
+    submit_button = st.form_submit_button(label='Predict')
 
 # Prepare input data for prediction
 features = {
