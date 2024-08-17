@@ -1,7 +1,9 @@
+# app.py
 import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
+from feature_engineering import feature_engineering  # Import the function
 
 # Load the model
 model = joblib.load('model.pkl')
@@ -71,8 +73,7 @@ avg_glucose_level = st.number_input('Average Glucose Level', min_value=0.0, valu
 bmi = st.number_input('BMI', min_value=0.0, value=25.0)
 smoking_status = st.selectbox('Smoking Status', ['Unknown', 'formerly smoked', 'never smoked', 'smokes'])
 
-
-
+# Prepare input data for prediction
 input_data = feature_engineering({
     'age': age,
     'gender': 0 if gender == 'Male' else 1,
