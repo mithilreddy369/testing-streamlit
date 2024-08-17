@@ -83,3 +83,6 @@ if st.button('Predict'):
 
 # End centered content
 end_center_content()
+
+st.write(f"Input Data Shape: {input_data.shape}")
+
