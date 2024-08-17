@@ -64,8 +64,12 @@ features = {
 # Apply feature engineering
 input_data = feature_engineering(features)
 
+# Debug: Check the shape and type of input_data
+st.write(f"Type of Input Data: {type(input_data)}")
+st.write(f"Shape of Input Data: {np.array(input_data).shape}")
+
 # Ensure input_data is a 2D array
-input_data = np.array([input_data])
+input_data = np.array(input_data).reshape(1, -1)  # Flatten and reshape to (1, 40)
 
 # Prediction
 if st.button('Predict'):
@@ -83,6 +87,3 @@ if st.button('Predict'):
 
 # End centered content
 end_center_content()
-
-st.write(f"Input Data Shape: {input_data.shape}")
-
