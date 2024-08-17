@@ -122,7 +122,7 @@ if submit_button:
             """, unsafe_allow_html=True)
 
         with col4:
-            color = 'success' if predictions['Gradient Boosting Model'] == 'No Stroke' else 'danger'
+            color = 'success' if predictions['Gradient-Boosting Model'] == 'No Stroke' else 'danger'
             st.markdown(f"""
             <div class="alert alert-{color}" role="alert">
                 <h4 class="alert-heading">Gradient Boosting Model</h4>
