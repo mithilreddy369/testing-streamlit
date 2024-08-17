@@ -1,34 +1,6 @@
 # app.py
 import streamlit as st
-import pandas as pd
-import numpy as np
-import joblib
-from feature_engineering import feature_engineering  # Import the function
-
-# Load the model
-model = joblib.load('model.pkl')
-
-# Define the feature names expected by the model
-expected_features = ['age', 'gender', 'hypertension', 'heart_disease', 'ever_married', 
-                     'work_type', 'Residence_type', 'avg_glucose_level', 'bmi', 
-                     'smoking_status', 'bmi_category', 'glucose_category', 
-                     'age_bmi_interaction', 'married_work_interaction', 
-                     'high_risk_indicators', 'age_group', 'risk_factor', 
-                     'glucose_bmi_ratio', 'married_working', 'urban_smoker', 
-                     'age_work_interaction', 'smoking_residence_interaction', 
-                     'age_hypertension_interaction', 'age_heart_disease_interaction', 
-                     'glucose_hypertension_interaction', 'glucose_heart_disease_interaction', 
-                     'bmi_hypertension_interaction', 'bmi_heart_disease_interaction', 
-                     'age_group_glucose_bmi_ratio', 'glucose_age_group_interaction', 
-                     'age_glucose_interaction', 'bmi_glucose_interaction', 
-                     'hypertension_glucose_category_interaction', 
-                     'heart_disease_glucose_category_interaction', 
-                     'age_group_glucose_category_interaction', 
-                     'bmi_category_glucose_category_interaction', 
-                     'age_group_bmi_category_interaction', 
-                     'age_high_risk_interaction', 
-                     'glucose_bmi_ratio_risk_factor_interaction', 
-                     'work_type_risk_factor_interaction']
+from backend import prepare_input_data, make_prediction
 
 # Function to center content
 def center_content():
@@ -74,26 +46,13 @@ bmi = st.number_input('BMI', min_value=0.0, value=25.0)
 smoking_status = st.selectbox('Smoking Status', ['Unknown', 'formerly smoked', 'never smoked', 'smokes'])
 
 # Prepare input data for prediction
-input_data = feature_engineering({
-    'age': age,
-    'gender': 0 if gender == 'Male' else 1,
-    'hypertension': hypertension,
-    'heart_disease': heart_disease,
-    'ever_married': 0 if ever_married == 'No' else 1,
-    'work_type': ['Govt_job', 'Never_worked', 'Private', 'Self_employed'].index(work_type),
-    'Residence_type': 0 if Residence_type == 'Rural' else 1,
-    'avg_glucose_level': avg_glucose_level,
-    'bmi': bmi,
-    'smoking_status': ['Unknown', 'formerly smoked', 'never smoked', 'smokes'].index(smoking_status)
-})
+input_data = prepare_input_data(age, gender, hypertension, heart_disease, ever_married, work_type,
+                                Residence_type, avg_glucose_level, bmi, smoking_status)
 
 # Prediction
 if st.button('Predict'):
-    try:
-        prediction = model.predict(input_data)
-        st.write(f"Prediction: {'Stroke' if prediction[0] == 1 else 'No Stroke'}")
-    except Exception as e:
-        st.error(f"Error making prediction: {e}")
+    prediction = make_prediction(input_data)
+    st.write(f"Prediction: {prediction}")
 
 # End centered content
 end_center_content()
