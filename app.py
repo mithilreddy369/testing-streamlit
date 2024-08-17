@@ -4,19 +4,17 @@ import joblib
 import pickle
 from feature_engineering import feature_engineering  # Import the function
 from css import add_custom_css  # Import the custom CSS function
+import joblib
 
 # Apply custom CSS
 add_custom_css()
 
-# Load models
-with open('catboost_model.pkl', 'rb') as file:
-    catboost_model = pickle.load(file)
-with open('lgb_model.pkl', 'rb') as file:
-    lgb_model = pickle.load(file)
-with open('xgb_model.pkl', 'rb') as file:
-    xgb_model = pickle.load(file)
-with open('gbm_model.pkl', 'rb') as file:
-    gbm_model = pickle.load(file)
+
+# Load models using joblib
+catboost_model = joblib.load('catboost_model.pkl')
+lgb_model = joblib.load('lgb_model.pkl')
+xgb_model = joblib.load('xgb_model.pkl')
+gbm_model = joblib.load('gbm_model.pkl')
 
 # Function to center content
 def center_content():
