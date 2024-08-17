@@ -84,10 +84,13 @@ input_data = feature_engineering({
     'smoking_status': ['Unknown', 'formerly smoked', 'never smoked', 'smokes'].index(smoking_status)
 })
 
+# Convert input_data to a 2D array by wrapping it in a list
+input_data = np.array([input_data])
+
 # Prediction
 if st.button('Predict'):
     try:
-        prediction = model.predict([input_data])
+        prediction = model.predict(input_data)
         result = 'Stroke' if prediction[0] == 1 else 'No Stroke'
         st.markdown(f"""
         <div class="alert alert-primary mt-4" role="alert">
