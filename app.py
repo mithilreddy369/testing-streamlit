@@ -1,14 +1,22 @@
 import streamlit as st
 import numpy as np
 import joblib
+import pickle
 from feature_engineering import feature_engineering  # Import the function
 from css import add_custom_css  # Import the custom CSS function
 
 # Apply custom CSS
 add_custom_css()
 
-# Load the model
-model = joblib.load('model.pkl')
+# Load models
+with open('catboost_model.pkl', 'rb') as file:
+    catboost_model = pickle.load(file)
+with open('lgb_model.pkl', 'rb') as file:
+    lgb_model = pickle.load(file)
+with open('xgb_model.pkl', 'rb') as file:
+    xgb_model = pickle.load(file)
+with open('gbm_model.pkl', 'rb') as file:
+    gbm_model = pickle.load(file)
 
 # Function to center content
 def center_content():
@@ -70,19 +78,33 @@ features = {
 input_data = feature_engineering(features)
 
 # Ensure input_data is a 2D array
-input_data = np.array(input_data).reshape(1, -1)  # Flatten and reshape to (1, 40)
+input_data = np.array(input_data).reshape(1, -1)  # Flatten and reshape to (1, -1)
 
 # Prediction
 if submit_button:
     try:
-        prediction = model.predict(input_data)
-        result = 'Stroke' if prediction[0] == 1 else 'No Stroke'
-        st.markdown(f"""
-        <div class="alert alert-primary mt-4" role="alert">
-            <h4 class="alert-heading">Prediction Result</h4>
-            <p class="mb-0">The prediction is: <strong>{result}</strong></p>
-        </div>
-        """, unsafe_allow_html=True)
+        # Get predictions from all models
+        catboost_pred = catboost_model.predict(input_data)[0]
+        lgb_pred = lgb_model.predict(input_data)[0]
+        xgb_pred = xgb_model.predict(input_data)[0]
+        gbm_pred = gbm_model.predict(input_data)[0]
+
+        predictions = {
+            'CatBoost Model': 'Stroke' if catboost_pred == 1 else 'No Stroke',
+            'LightGBM Model': 'Stroke' if lgb_pred == 1 else 'No Stroke',
+            'XGBoost Model': 'Stroke' if xgb_pred == 1 else 'No Stroke',
+            'Gradient Boosting Model': 'Stroke' if gbm_pred == 1 else 'No Stroke'
+        }
+
+        # Display predictions in colored boxes
+        for model_name, result in predictions.items():
+            color = 'success' if result == 'No Stroke' else 'danger'
+            st.markdown(f"""
+            <div class="alert alert-{color} mt-4" role="alert">
+                <h4 class="alert-heading">{model_name}</h4>
+                <p class="mb-0">The prediction is: <strong>{result}</strong></p>
+            </div>
+            """, unsafe_allow_html=True)
     except Exception as e:
         st.error(f"Error making prediction: {e}")
 
