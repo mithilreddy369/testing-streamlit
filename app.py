@@ -70,7 +70,8 @@ features = {
 }
 
 # Apply feature engineering
-input_data = feature_engineering(features)
+#input_data = feature_engineering(features)
+input_data = features
 
 # Ensure input_data is a 2D array
 input_data = np.array(input_data).reshape(1, -1)  # Flatten and reshape to (1, -1)
