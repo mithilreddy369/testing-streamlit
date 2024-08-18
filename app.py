@@ -53,16 +53,27 @@ form_data = {
 
 # Create form layout
 with st.form(key='input_form'):
-    st.markdown('<div class="form-row">', unsafe_allow_html=True)
-    cols = st.columns(3)  # Create 3 columns per row
+    # Create a grid layout with 3 columns per row
+    rows = []
     for i, (label, (var_name, input_type, *args)) in enumerate(form_data.items()):
-        with cols[i % 3]:  # Ensure 3 columns per row
-            if input_type == 'number_input':
-                locals()[var_name] = st.number_input(label, min_value=args[0], max_value=args[1], value=args[2])
-            elif input_type == 'selectbox':
-                locals()[var_name] = st.selectbox(label, args[0])
-
-    st.markdown('</div>', unsafe_allow_html=True)
+        if i % 3 == 0:
+            # Start a new row for every 3 inputs
+            row = st.columns(3)
+            rows.append(row)
+        
+        # Determine the correct column for the input field
+        col = rows[-1][i % 3]
+        
+        if input_type == 'number_input':
+            locals()[var_name] = col.number_input(label, min_value=args[0], max_value=args[1], value=args[2])
+        elif input_type == 'selectbox':
+            locals()[var_name] = col.selectbox(label, args[0])
+    
+    # Handle remaining fields if not divisible by 3
+    if len(form_data) % 3 != 0:
+        remaining_cols = 3 - (len(form_data) % 3)
+        for _ in range(remaining_cols):
+            st.empty()  # Add empty columns to align the last row properly
 
     # Submit button
     submit_button = st.form_submit_button(label='Predict')
