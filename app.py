@@ -55,26 +55,38 @@ with st.form(key='input_form'):
     # Submit button
     submit_button = st.form_submit_button(label='Predict')
 
-# Prepare input data for prediction
-features = {
-    'age': age,
-    'gender': 0 if gender == 'Male' else 1,
-    'hypertension': hypertension,
-    'heart_disease': heart_disease,
-    'ever_married': 0 if ever_married == 'No' else 1,
-    'work_type': ['Govt_job', 'Never_worked', 'Private', 'Self_employed'].index(work_type),
-    'Residence_type': 0 if Residence_type == 'Rural' else 1,
-    'avg_glucose_level': avg_glucose_level,
-    'bmi': bmi,
-    'smoking_status': ['Unknown', 'formerly smoked', 'never smoked', 'smokes'].index(smoking_status)
+import numpy as np
+
+# Categorical mappings based on your provided dictionary
+mappings = {
+    'gender': {'Female': 0, 'Male': 1, 'Other': 2},
+    'ever_married': {'No': 0, 'Yes': 1},
+    'work_type': {'Govt_job': 0, 'Never_worked': 1, 'Private': 2, 'Self-employed': 3, 'children': 4},
+    'Residence_type': {'Rural': 0, 'Urban': 1},
+    'smoking_status': {'Unknown': 0, 'formerly smoked': 1, 'never smoked': 2, 'smokes': 3}
 }
 
-# Apply feature engineering
-#input_data = feature_engineering(features)
-input_data = features
+# Prepare input data with mapped values
+features = {
+    'age': age,
+    'gender': mappings['gender'][gender],
+    'hypertension': hypertension,
+    'heart_disease': heart_disease,
+    'ever_married': mappings['ever_married'][ever_married],
+    'work_type': mappings['work_type'][work_type],
+    'Residence_type': mappings['Residence_type'][Residence_type],
+    'avg_glucose_level': avg_glucose_level,
+    'bmi': bmi,
+    'smoking_status': mappings['smoking_status'][smoking_status]
+}
 
-# Ensure input_data is a 2D array
-input_data = np.array(input_data).reshape(1, -1)  # Flatten and reshape to (1, -1)
+# Convert feature values to NumPy array
+input_data = np.array(list(features.values()))
+
+# Reshape input_data to a 2D array (1, number_of_features)
+input_data = input_data.reshape(1, -1)
+
+
 
 # Prediction
 if submit_button:
