@@ -45,7 +45,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.title('Stroke Prediction App')
+st.title('Brain Stroke Prediction App')
 
 # Input form
 with st.form(key='prediction_form'):
