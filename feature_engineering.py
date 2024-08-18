@@ -135,7 +135,6 @@ def feature_engineering(data):
     data['work_type_risk_factor_interaction'] = data['work_type'] * data['risk_factor']
 
     # Reorder columns to match model
-    '''
     expected_features = ['age', 'gender', 'hypertension', 'heart_disease', 'ever_married', 
                          'work_type', 'Residence_type', 'avg_glucose_level', 'bmi', 
                          'smoking_status', 'bmi_category', 'glucose_category', 
@@ -156,10 +155,7 @@ def feature_engineering(data):
                          'age_high_risk_interaction', 
                          'glucose_bmi_ratio_risk_factor_interaction', 
                          'work_type_risk_factor_interaction']
-    '''
-     expected_features = ['age', 'gender', 'hypertension', 'heart_disease', 'ever_married', 
-                         'work_type', 'Residence_type', 'avg_glucose_level', 'bmi', 
-                         'smoking_status']
+
     # Add missing features with default value
     for feature in expected_features:
         if feature not in data.columns:
