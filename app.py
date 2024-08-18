@@ -9,18 +9,23 @@ import pickle
 add_custom_css()
 
 
-# Load models using pickle
-with open('catboost_model1.pkl', 'rb') as f:
-    catboost_model = pickle.load(f)
+def load_model(file_path):
+    try:
+        with open(file_path, 'rb') as file:
+            model = pickle.load(file)
+        return model
+    except pickle.UnpicklingError as e:
+        print(f"Error loading {file_path}: {e}")
+    except FileNotFoundError as e:
+        print(f"File not found: {file_path}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
 
-with open('lgb_model1.pkl', 'rb') as f:
-    lgb_model = pickle.load(f)
-
-with open('xgb_model1.pkl', 'rb') as f:
-    xgb_model = pickle.load(f)
-
-with open('gbm_model1.pkl', 'rb') as f:
-    gbm_model = pickle.load(f)
+# Load models
+catboost_model = load_model('catboost_model1.pkl')
+lgb_model = load_model('lgb_model1.pkl')
+xgb_model = load_model('xgb_model1.pkl')
+gbm_model = load_model('gbm_model1.pkl')
 
 # Function to center content
 def center_content():
