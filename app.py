@@ -8,10 +8,10 @@ from css import add_custom_css  # Import the custom CSS function
 add_custom_css()
 
 # Load models using joblib
-catboost_model = joblib.load('catboost_model.pkl')
-lgb_model = joblib.load('lgb_model.pkl')
-xgb_model = joblib.load('xgb_model.pkl')
-gbm_model = joblib.load('gbm_model.pkl')
+catboost_model = joblib.load('catboost_model1.pkl')
+lgb_model = joblib.load('lgb_model1.pkl')
+xgb_model = joblib.load('xgb_model1.pkl')
+gbm_model = joblib.load('gbm_model1.pkl')
 
 # Function to center content
 def center_content():
