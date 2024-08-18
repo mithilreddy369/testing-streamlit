@@ -35,68 +35,17 @@ def predict_stroke(features_array):
 
 # Streamlit app
 st.markdown("""
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        .main {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-        }
-        .title {
-            text-align: center;
-            color: #343a40;
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        .form-row {
-            display: flex;
-            justify-content: space-between;
-        }
-        .form-group {
-            flex: 1;
-            margin-right: 10px;
-        }
-        .form-group:last-child {
-            margin-right: 0;
-        }
-        .predict-button {
-            display: block;
-            width: 100%;
-            margin-top: 20px;
-            background-color: #007bff;
-            color: white;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .predict-button:hover {
-            background-color: #0056b3;
-        }
-        .result-box {
-            display: inline-block;
-            width: 22%;
-            padding: 10px;
-            margin: 5px;
-            border-radius: 5px;
-            color: white;
-            text-align: center;
-        }
-        .result-box.green {
-            background-color: #28a745;
-        }
-        .result-box.red {
-            background-color: #dc3545;
-        }
-        .results-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-        }
+        .input-group { margin-bottom: 15px; }
+        .prediction-box { padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+        .green { background-color: #28a745; color: white; }
+        .red { background-color: #dc3545; color: white; }
+        .prediction-row { display: flex; justify-content: space-around; }
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="title">Brain Stroke Prediction App</div>', unsafe_allow_html=True)
+st.title('Stroke Prediction App')
 
 # Input form
 with st.form(key='prediction_form'):
@@ -107,7 +56,7 @@ with st.form(key='prediction_form'):
         age = st.slider('Age', min_value=0, max_value=100, value=20)
     with col3:
         hypertension = st.selectbox('Hypertension', [0, 1])
-        
+
     col4, col5, col6 = st.columns(3)
     with col4:
         heart_disease = st.selectbox('Heart Disease', [0, 1])
@@ -115,7 +64,7 @@ with st.form(key='prediction_form'):
         ever_married = st.selectbox('Ever Married', ['Yes', 'No'])
     with col6:
         work_type = st.selectbox('Work Type', ['Govt_job', 'Never_worked', 'Private', 'Self_employed', 'children'])
-    
+
     col7, col8, col9 = st.columns(3)
     with col7:
         residence_type = st.selectbox('Residence Type', ['Rural', 'Urban'])
@@ -123,14 +72,12 @@ with st.form(key='prediction_form'):
         avg_glucose_level = st.number_input('Average Glucose Level', min_value=0.0, max_value=300.0, value=80.13)
     with col9:
         bmi = st.number_input('BMI', min_value=0.0, max_value=100.0, value=23.4)
-    
+
     col10, col11 = st.columns(2)
     with col10:
         smoking_status = st.selectbox('Smoking Status', ['Unknown', 'formerly smoked', 'never smoked', 'smokes'])
-    with col11:
-        st.write("")  # Empty column for spacing
-
-    submit_button = st.form_submit_button(label='Predict', key='predict_button', help='Click to predict stroke risk')
+    
+    submit_button = st.form_submit_button(label='Predict')
 
 # Map categorical values to numerical values
 def map_data(data):
@@ -180,11 +127,12 @@ if submit_button:
     
     predictions = predict_stroke(features_array)
     
-    st.markdown('<div class="results-container">', unsafe_allow_html=True)
-    
+    st.write("## Predictions")
+
+    prediction_rows = []
     for model_name, pred in predictions.items():
-        color = 'green' if pred == 0 else 'red'
+        color_class = 'green' if pred == 0 else 'red'
         result = 'No Stroke' if pred == 0 else 'Stroke'
-        st.markdown(f'<div class="result-box {color}">{model_name}: {result}</div>', unsafe_allow_html=True)
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+        prediction_rows.append(f'<div class="prediction-box {color_class}">{model_name}: {result}</div>')
+
+    st.markdown('<div class="prediction-row">' + ''.join(prediction_rows) + '</div>', unsafe_allow_html=True)
