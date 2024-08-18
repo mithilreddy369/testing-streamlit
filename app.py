@@ -1,13 +1,11 @@
 import streamlit as st
 import numpy as np
-import joblib
-from feature_engineering import feature_engineering  # Import the function
-from css import add_custom_css  # Import the custom CSS function
 import pickle
+from feature_engineering import feature_engineering  # Ensure this is used if needed
+from css import add_custom_css  # Ensure this is correctly implemented
 
 # Apply custom CSS
 add_custom_css()
-
 
 def load_model(file_path):
     try:
@@ -15,11 +13,11 @@ def load_model(file_path):
             model = pickle.load(file)
         return model
     except pickle.UnpicklingError as e:
-        print(f"Error loading {file_path}: {e}")
+        st.error(f"Error loading {file_path}: {e}")
     except FileNotFoundError as e:
-        print(f"File not found: {file_path}")
+        st.error(f"File not found: {file_path}")
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        st.error(f"An unexpected error occurred: {e}")
 
 # Load models
 catboost_model = load_model('catboost_model1.pkl')
@@ -69,18 +67,16 @@ with st.form(key='input_form'):
     # Submit button
     submit_button = st.form_submit_button(label='Predict')
 
-import numpy as np
-
-# Categorical mappings based on your provided dictionary
+# Categorical mappings
 mappings = {
     'gender': {'Female': 0, 'Male': 1, 'Other': 2},
     'ever_married': {'No': 0, 'Yes': 1},
-    'work_type': {'Govt_job': 0, 'Never_worked': 1, 'Private': 2, 'Self-employed': 3, 'children': 4},
+    'work_type': {'Govt_job': 0, 'Never_worked': 1, 'Private': 2, 'Self_employed': 3, 'children': 4},
     'Residence_type': {'Rural': 0, 'Urban': 1},
     'smoking_status': {'Unknown': 0, 'formerly smoked': 1, 'never smoked': 2, 'smokes': 3}
 }
 
-# Prepare input data with mapped values
+# Prepare input data
 features = {
     'age': age,
     'gender': mappings['gender'][gender],
@@ -95,18 +91,13 @@ features = {
 }
 
 # Convert feature values to NumPy array
-input_data = np.array(list(features.values()))
-
-# Reshape input_data to a 2D array (1, number_of_features)
-input_data = input_data.reshape(1, -1)
-
-
+input_data = np.array(list(features.values())).reshape(1, -1)
 
 # Prediction
 if submit_button:
     try:
         # Get predictions from all models
-        catboost_prob = catboost_model.predict_proba(input_data)[0][1]  # Probability of "Stroke" class
+        catboost_prob = catboost_model.predict_proba(input_data)[0][1]
         lgb_prob = lgb_model.predict_proba(input_data)[0][1]
         xgb_prob = xgb_model.predict_proba(input_data)[0][1]
         gbm_prob = gbm_model.predict_proba(input_data)[0][1]
@@ -118,7 +109,7 @@ if submit_button:
             'Gradient Boosting Model': 'Stroke' if gbm_prob > 0.5 else 'No Stroke'
         }
 
-        # Display predictions side by side using columns
+        # Display predictions side by side
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
