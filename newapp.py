@@ -36,6 +36,12 @@ def predict_stroke(features_array):
         predictions[name] = pred
     return predictions
 
+# Create a function for SHAP explanations
+def explain_model(model, features_df):
+    explainer = shap.Explainer(model)
+    shap_values = explainer(features_df)
+    return shap_values
+
 # Streamlit app
 st.markdown("""
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -191,29 +197,25 @@ if submit_button:
 
     if selected_model == 'CatBoost':
         st.write("### SHAP Explanation for CatBoost Model")
-        explainer = shap.Explainer(catboost_model)
-        shap_values = explainer(features_df)
+        shap_values = explain_model(catboost_model, features_df)
         fig, ax = plt.subplots()
         shap.plots.waterfall(shap_values[0])
         st.pyplot(fig)
     elif selected_model == 'LightGBM':
         st.write("### SHAP Explanation for LightGBM Model")
-        explainer = shap.Explainer(lgb_model)
-        shap_values = explainer(features_df)
+        shap_values = explain_model(lgb_model, features_df)
         fig, ax = plt.subplots()
         shap.plots.waterfall(shap_values[0])
         st.pyplot(fig)
     elif selected_model == 'XGBoost':
         st.write("### SHAP Explanation for XGBoost Model")
-        explainer = shap.Explainer(xgb_model)
-        shap_values = explainer(features_df)
+        shap_values = explain_model(xgb_model, features_df)
         fig, ax = plt.subplots()
         shap.plots.waterfall(shap_values[0])
         st.pyplot(fig)
     elif selected_model == 'Gradient Boosting':
         st.write("### SHAP Explanation for Gradient Boosting Model")
-        explainer = shap.Explainer(gbm_model)
-        shap_values = explainer(features_df)
+        shap_values = explain_model(gbm_model, features_df)
         fig, ax = plt.subplots()
         shap.plots.waterfall(shap_values[0])
         st.pyplot(fig)
