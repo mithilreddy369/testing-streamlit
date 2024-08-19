@@ -10,15 +10,6 @@ import lime.lime_tabular
 with open('catboost_model1.pkl', 'rb') as file:
     catboost_model = pickle.load(file)
 
-with open('lgb_model1.pkl', 'rb') as file:
-    lgb_model = pickle.load(file)
-
-with open('xgb_model1.pkl', 'rb') as file:
-    xgb_model = pickle.load(file)
-
-with open('gbm_model1.pkl', 'rb') as file:
-    gbm_model = pickle.load(file)
-
 # Load the training data for LIME
 train_data = pd.read_csv('train_data_for_lime.csv')
 
@@ -44,9 +35,6 @@ def predict_stroke(features_array):
     predictions = {}
     models = {
         'CatBoost': catboost_model,
-        'LightGBM': lgb_model,
-        'XGBoost': xgb_model,
-        'Gradient Boosting': gbm_model
     }
     for name, model in models.items():
         pred = model.predict(features_array)[0]
@@ -55,9 +43,12 @@ def predict_stroke(features_array):
 
 # Function to explain with LIME
 def explain_with_lime(instance):
+    def predict_proba_fn(X):
+        return catboost_model.predict_proba(X)
+    
     exp = lime_explainer.explain_instance(
         data_row=instance,
-        predict_fn=catboost_model.predict_proba
+        predict_fn=predict_proba_fn
     )
     
     explanation_list = exp.as_list()
@@ -84,17 +75,6 @@ def explain_with_lime(instance):
     st.pyplot(plt)
 
 # Streamlit app
-st.markdown("""
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        .input-group { margin-bottom: 15px; }
-        .prediction-box { padding: 10px; border-radius: 5px; margin-bottom: 10px; }
-        .green { background-color: #28a745; color: white; }
-        .red { background-color: #dc3545; color: white; }
-        .prediction-row { display: flex; justify-content: space-around; }
-    </style>
-""", unsafe_allow_html=True)
-
 st.title('Brain Stroke Prediction App')
 
 # Input form
@@ -195,7 +175,7 @@ if submit_button:
     predictions = predict_stroke(features_array)
     
     st.write("## Predictions")
-    
+
     prediction_rows = []
     for model_name, pred in predictions.items():
         color_class = 'green' if pred == 0 else 'red'
@@ -203,23 +183,19 @@ if submit_button:
         prediction_rows.append(f'<div class="prediction-box {color_class}">{model_name}: {result}</div>')
 
     st.markdown('<div class="prediction-row">' + ''.join(prediction_rows) + '</div>', unsafe_allow_html=True)
+
+    # SHAP explanation for CatBoost
+    st.write("## SHAP Explanation for CatBoost Model")
     
-    # Choose between SHAP and LIME explanations
-    explanation_choice = st.selectbox("Choose explanation method:", ["SHAP", "LIME"])
+    explainer = shap.Explainer(catboost_model)
+    shap_values = explainer(features_df)
+    
+    # Plot SHAP waterfall for the first instance
+    fig, ax = plt.subplots()
+    shap.plots.waterfall(shap_values[0])
+    st.pyplot(fig)
 
-    if explanation_choice == "SHAP":
-        st.write("## SHAP Explanation for CatBoost Model")
-        explainer = shap.Explainer(catboost_model)
-        shap_values = explainer(features_df)
-        
-        # Plot SHAP waterfall for the first instance
-        fig, ax = plt.subplots()
-        shap.plots.waterfall(shap_values[0])
-        st.pyplot(fig)
-
-    elif explanation_choice == "LIME":
-        st.write("## LIME Explanation")
-        # Select an instance to explain (using the same instance used for prediction)
-        instance = features_df.iloc[0].values
-        explain_with_lime(instance)
-
+    # LIME explanation
+    st.write("## LIME Explanation")
+    instance = features_df.iloc[0].values
+    explain_with_lime(instance)
