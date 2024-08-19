@@ -120,7 +120,7 @@ with st.form(key='prediction_form'):
     with col10:
         smoking_status = st.selectbox('Smoking Status', ['Unknown', 'formerly smoked', 'never smoked', 'smokes'])
     
-    model_selector = st.selectbox("Select Model for XAI", ["CatBoost", "LightGBM", "XGBoost", "Gradient Boosting"])
+    model_selector = st.selectbox("Select Model for XAI", ["CatBoost  (Model Accuracy - 92.27%) ",  "XGBoost  (Model Accuracy - 90.92%)", "LightGBM  (Model Accuracy - 89.65%)","Gradient Boosting  Boosting (Model Accuracy - 84.18%)"])
     submit_button = st.form_submit_button(label='Predict')
 
 # Map categorical values to numerical values
@@ -174,10 +174,10 @@ if submit_button:
     
     # Select the model
     model_dict = {
-        "CatBoost (Model Accuracy - 92.27%) ": catboost_model,
-        "XGBoost (Model Accuracy - 90.92%)": xgb_model,
-        "LightGBM (Model Accuracy - 89.65%)": lgb_model,
-        "Gradient Boosting (Model Accuracy - 84.18%)": gbm_model
+        "CatBoost": catboost_model,
+        "XGBoost": xgb_model,
+        "LightGBM": lgb_model,
+        "Gradient": gbm_model
     }
     selected_model = model_dict.get(model_selector)
 
