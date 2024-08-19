@@ -1,12 +1,12 @@
 import streamlit as st
 import pickle
 import numpy as np
-from catboost import CatBoostClassifier
-from lightgbm import LGBMClassifier
-from xgboost import XGBClassifier
-from sklearn.ensemble import GradientBoostingClassifier
+import shap
+import pandas as pd
+from lime.lime_tabular import LimeTabularExplainer
+import matplotlib.pyplot as plt
 
-# Load the models
+# Load models
 with open('catboost_model1.pkl', 'rb') as file:
     catboost_model = pickle.load(file)
 
@@ -33,22 +33,56 @@ def predict_stroke(features_array):
         predictions[name] = pred
     return predictions
 
+# Function to display SHAP and LIME plots for the chosen model
+def display_xai(model_name, model, features_array):
+    st.write(f"### XAI for {model_name}")
+    
+    # SHAP
+    st.write("#### SHAP Waterfall Plot")
+    explainer = shap.Explainer(model)
+    shap_values = explainer(pd.DataFrame(features_array, columns=feature_names))
+    shap.plots.waterfall(shap_values[0])
+    
+    # LIME
+    st.write("#### LIME Explanation")
+    explainer = LimeTabularExplainer(training_data=features_array, feature_names=feature_names, class_names=['No Stroke', 'Stroke'], mode='classification')
+    explanation = explainer.explain_instance(features_array[0], model.predict_proba)
+    fig = explanation.as_pyplot_figure()
+    st.pyplot(fig)
+
 # Streamlit app
-st.title('Stroke Prediction App')
+st.title('Brain Stroke Prediction App')
 
 # Input form
 with st.form(key='prediction_form'):
-    gender = st.selectbox('Gender', ['Male', 'Female'])
-    age = st.slider('Age', min_value=0, max_value=100, value=20)
-    hypertension = st.selectbox('Hypertension', [0, 1])
-    heart_disease = st.selectbox('Heart Disease', [0, 1])
-    ever_married = st.selectbox('Ever Married', ['Yes', 'No'])
-    work_type = st.selectbox('Work Type', ['Govt_job', 'Never_worked', 'Private', 'Self_employed', 'children'])
-    residence_type = st.selectbox('Residence Type', ['Rural', 'Urban'])
-    avg_glucose_level = st.number_input('Average Glucose Level', min_value=0.0, max_value=300.0, value=80.13)
-    bmi = st.number_input('BMI', min_value=0.0, max_value=100.0, value=23.4)
-    smoking_status = st.selectbox('Smoking Status', ['Unknown', 'formerly smoked', 'never smoked', 'smokes'])
-    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        gender = st.selectbox('Gender', ['Male', 'Female'])
+    with col2:
+        age = st.slider('Age', min_value=0, max_value=100, value=20)
+    with col3:
+        hypertension = st.selectbox('Hypertension', [0, 1])
+
+    col4, col5, col6 = st.columns(3)
+    with col4:
+        heart_disease = st.selectbox('Heart Disease', [0, 1])
+    with col5:
+        ever_married = st.selectbox('Ever Married', ['Yes', 'No'])
+    with col6:
+        work_type = st.selectbox('Work Type', ['Govt_job', 'Never_worked', 'Private', 'Self_employed', 'children'])
+
+    col7, col8, col9 = st.columns(3)
+    with col7:
+        residence_type = st.selectbox('Residence Type', ['Rural', 'Urban'])
+    with col8:
+        avg_glucose_level = st.number_input('Average Glucose Level', min_value=0.0, max_value=300.0, value=80.13)
+    with col9:
+        bmi = st.number_input('BMI', min_value=0.0, max_value=100.0, value=23.4)
+
+    col10, col11 = st.columns(2)
+    with col10:
+        smoking_status = st.selectbox('Smoking Status', ['Unknown', 'formerly smoked', 'never smoked', 'smokes'])
+
     submit_button = st.form_submit_button(label='Predict')
 
 # Map categorical values to numerical values
@@ -66,6 +100,7 @@ def map_data(data):
         'smoking_status': {'Unknown': 0, 'formerly smoked': 1, 'never smoked': 2, 'smokes': 3}[data['smoking_status']]
     }
 
+# Prediction process
 if submit_button:
     input_data = {
         'gender': gender,
@@ -81,27 +116,12 @@ if submit_button:
     }
     
     data_mapped = map_data(input_data)
-    
-    features = [
-        data_mapped['gender'],
-        data_mapped['age'],
-        data_mapped['hypertension'],
-        data_mapped['heart_disease'],
-        data_mapped['ever_married'],
-        data_mapped['work_type'],
-        data_mapped['Residence_type'],
-        data_mapped['avg_glucose_level'],
-        data_mapped['bmi'],
-        data_mapped['smoking_status']
-    ]
-    
-    features_array = np.array(features).reshape(1, -1)
-    
+    features_array = np.array(list(data_mapped.values())).reshape(1, -1)
+
     predictions = predict_stroke(features_array)
-    
-    st.write("## Predictions")
-    
-    for model_name, pred in predictions.items():
-        color = 'green' if pred == 0 else 'red'
-        result = 'No Stroke' if pred == 0 else 'Stroke'
-        st.markdown(f'<div style="background-color: {color}; color: white; padding: 10px; border-radius: 5px;">{model_name}: {result}</div>', unsafe_allow_html=True)
+
+    # Display prediction boxes
+    st.write("## Predictions (Click to view XAI)")
+    for model_name in predictions.keys():
+        if st.button(f'{model_name}: {"No Stroke" if predictions[model_name] == 0 else "Stroke"}'):
+            display_xai(model_name, globals()[f"{model_name.lower().replace(' ', '_')}_model"], features_array)
