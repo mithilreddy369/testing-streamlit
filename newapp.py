@@ -149,7 +149,7 @@ with st.form(key='prediction_form'):
     with col10:
         smoking_status = st.selectbox('Smoking Status', ['Unknown', 'formerly smoked', 'never smoked', 'smokes'])
     
-    model_selector = st.selectbox("Select Model for XAI", [
+    model_selector = st.selectbox("Select Model for Prediction and XAI", [
         "CatBoost  (Model Accuracy - 92.27%)",
         "XGBoost  (Model Accuracy - 90.92%)",
         "LightGBM  (Model Accuracy - 89.65%)",
