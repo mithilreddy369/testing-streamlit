@@ -100,10 +100,7 @@ def explain_with_shap(instance, model, model_name):
     if explainer is not None:
         shap_values = explainer(instance)
         fig, ax = plt.subplots()
-        if model_name == "1Gradient Boosting  (Model Accuracy - 84.18%)":
-            shap.summary_plot(shap_values, features_df, plot_type="bar")
-        else:
-            shap.plots.waterfall(shap_values[0])
+        shap.plots.waterfall(shap_values[0])
         st.pyplot(fig)
     else:
         st.error("SHAP explainer not supported for this model.")
