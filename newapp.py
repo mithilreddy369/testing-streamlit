@@ -191,7 +191,7 @@ if submit_button:
 
     # SHAP explanation
     if model_selector == "CatBoost":
-        st.write("## SHAP Explanation for {model_selector} Model")
+        st.write(f"## SHAP Explanation for {model_selector} Model")
         explainer = shap.Explainer(catboost_model)
         shap_values = explainer(features_df)
         fig, ax = plt.subplots()
