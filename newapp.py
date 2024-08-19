@@ -45,6 +45,7 @@ st.markdown("""
         .green { background-color: #28a745; color: white; }
         .red { background-color: #dc3545; color: white; }
         .prediction-row { display: flex; justify-content: space-around; }
+        .xai-button { padding: 10px 20px; border-radius: 5px; margin-right: 10px; cursor: pointer; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -157,13 +158,38 @@ if submit_button:
 
     st.markdown('<div class="prediction-row">' + ''.join(prediction_rows) + '</div>', unsafe_allow_html=True)
 
-    # SHAP explanation for CatBoost
-    st.write("## SHAP Explanation for CatBoost Model")
-    
-    explainer = shap.Explainer(catboost_model)
-    shap_values = explainer(features_df)
-    
-    # Plot SHAP waterfall for the first instance
-    fig, ax = plt.subplots()
-    shap.plots.waterfall(shap_values[0])
-    st.pyplot(fig)
+    # Model explanation selector
+    st.write("## XAI Explanations")
+    selected_model = st.radio(
+        "Select model for XAI explanation",
+        ('CatBoost', 'LightGBM', 'XGBoost', 'Gradient Boosting')
+    )
+
+    if selected_model == 'CatBoost':
+        st.write("### SHAP Explanation for CatBoost Model")
+        explainer = shap.Explainer(catboost_model)
+        shap_values = explainer(features_df)
+        fig, ax = plt.subplots()
+        shap.plots.waterfall(shap_values[0])
+        st.pyplot(fig)
+    elif selected_model == 'LightGBM':
+        st.write("### SHAP Explanation for LightGBM Model")
+        explainer = shap.Explainer(lgb_model)
+        shap_values = explainer(features_df)
+        fig, ax = plt.subplots()
+        shap.plots.waterfall(shap_values[0])
+        st.pyplot(fig)
+    elif selected_model == 'XGBoost':
+        st.write("### SHAP Explanation for XGBoost Model")
+        explainer = shap.Explainer(xgb_model)
+        shap_values = explainer(features_df)
+        fig, ax = plt.subplots()
+        shap.plots.waterfall(shap_values[0])
+        st.pyplot(fig)
+    elif selected_model == 'Gradient Boosting':
+        st.write("### SHAP Explanation for Gradient Boosting Model")
+        explainer = shap.Explainer(gbm_model)
+        shap_values = explainer(features_df)
+        fig, ax = plt.subplots()
+        shap.plots.waterfall(shap_values[0])
+        st.pyplot(fig)
