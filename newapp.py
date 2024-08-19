@@ -148,7 +148,7 @@ if submit_button:
     
     # Plot SHAP waterfall for the first instance
     fig, ax = plt.subplots()
-    shap.waterfall_plot(shap_values[0], show=False)
+    shap.waterfall_plot(shap_values[0])
     st.pyplot(fig)
     
     # LIME explanation for CatBoost
@@ -156,7 +156,7 @@ if submit_button:
     
     explainer_lime = LimeTabularExplainer(
         training_data=np.array([list(data_mapped.values())]),  # Use your training data
-        feature_names=list(data_mapped.keys()),
+        feature_names=feature_names,
         class_names=['No Stroke', 'Stroke'],
         mode='classification'
     )
@@ -166,5 +166,5 @@ if submit_button:
         predict_fn=catboost_model.predict_proba
     )
     
-    explanation_lime.show_in_notebook(show_table=True, show_all=False)
-    st.pyplot(explanation_lime.as_pyplot_figure())
+    fig_lime = explanation_lime.as_pyplot_figure()
+    st.pyplot(fig_lime)
