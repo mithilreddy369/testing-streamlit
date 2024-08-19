@@ -87,6 +87,17 @@ def explain_with_lime(instance):
     st.pyplot(plt)
 
 # Streamlit app
+st.markdown("""
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .input-group { margin-bottom: 15px; }
+        .prediction-box { padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+        .green { background-color: #28a745; color: white; }
+        .red { background-color: #dc3545; color: white; }
+        .prediction-row { display: flex; justify-content: space-around; }
+    </style>
+""", unsafe_allow_html=True)
+
 st.title('Brain Stroke Prediction App')
 
 # Input form
