@@ -5,6 +5,7 @@ import shap
 import pandas as pd
 import matplotlib.pyplot as plt
 import lime.lime_tabular
+from sklearn.ensemble import GradientBoostingClassifier
 
 # Load the models
 with open('catboost_model1.pkl', 'rb') as file:
@@ -83,6 +84,29 @@ def explain_with_lime(instance, model):
     plt.grid(axis='x', linestyle='--', alpha=0.7)
     plt.tight_layout()
     st.pyplot(plt)
+
+# Function to explain with SHAP
+def explain_with_shap(instance, model, model_name):
+    explainer = None
+    if model_name == "CatBoost  (Model Accuracy - 92.27%)":
+        explainer = shap.Explainer(model)
+    elif model_name == "XGBoost  (Model Accuracy - 90.92%)":
+        explainer = shap.Explainer(model)
+    elif model_name == "LightGBM  (Model Accuracy - 89.65%)":
+        explainer = shap.Explainer(model)
+    elif model_name == "Gradient Boosting  (Model Accuracy - 84.18%)":
+        explainer = shap.KernelExplainer(model.predict_proba, shap.sample(X_train, 100))
+    
+    if explainer is not None:
+        shap_values = explainer(instance)
+        fig, ax = plt.subplots()
+        if model_name == "Gradient Boosting  (Model Accuracy - 84.18%)":
+            shap.summary_plot(shap_values, features_df, plot_type="bar")
+        else:
+            shap.plots.waterfall(shap_values[0])
+        st.pyplot(fig)
+    else:
+        st.error("SHAP explainer not supported for this model.")
 
 # Streamlit app
 st.markdown("""
@@ -204,13 +228,8 @@ if submit_button:
         st.markdown(f'<div class="prediction-box {color_class}">{model_selector}: {result}</div>', unsafe_allow_html=True)
 
         # SHAP explanation
-        if model_selector == "CatBoost  (Model Accuracy - 92.27%)":
-            st.write(f"## SHAP Explanation for {model_selector} Model")
-            explainer = shap.Explainer(catboost_model)
-            shap_values = explainer(features_df)
-            fig, ax = plt.subplots()
-            shap.plots.waterfall(shap_values[0])
-            st.pyplot(fig)
+        st.write(f"## SHAP Explanation for {model_selector} Model")
+        explain_with_shap(features_df, selected_model, model_selector)
 
         # LIME explanation
         st.write(f"## LIME Explanation for {model_selector} Model")
