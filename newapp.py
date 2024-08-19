@@ -45,7 +45,8 @@ st.markdown("""
         .green { background-color: #28a745; color: white; }
         .red { background-color: #dc3545; color: white; }
         .prediction-row { display: flex; justify-content: space-around; }
-        .xai-button { padding: 10px 20px; border-radius: 5px; margin-right: 10px; cursor: pointer; }
+        .xai-buttons { margin-top: 20px; }
+        .xai-button { padding: 10px 20px; border-radius: 5px; cursor: pointer; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -158,12 +159,25 @@ if submit_button:
 
     st.markdown('<div class="prediction-row">' + ''.join(prediction_rows) + '</div>', unsafe_allow_html=True)
 
-    # Model explanation selector
+    # XAI explanation buttons
     st.write("## XAI Explanations")
-    selected_model = st.radio(
-        "Select model for XAI explanation",
-        ('CatBoost', 'LightGBM', 'XGBoost', 'Gradient Boosting')
-    )
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        if st.button('CatBoost XAI'):
+            selected_model = 'CatBoost'
+    with col2:
+        if st.button('LightGBM XAI'):
+            selected_model = 'LightGBM'
+    with col3:
+        if st.button('XGBoost XAI'):
+            selected_model = 'XGBoost'
+    with col4:
+        if st.button('Gradient Boosting XAI'):
+            selected_model = 'Gradient Boosting'
+    
+    if 'selected_model' not in locals():
+        selected_model = 'CatBoost'  # Default to CatBoost XAI
 
     if selected_model == 'CatBoost':
         st.write("### SHAP Explanation for CatBoost Model")
