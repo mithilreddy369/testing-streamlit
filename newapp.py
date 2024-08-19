@@ -219,6 +219,6 @@ if submit_button:
     st.pyplot(fig)
 
     # LIME explanation
-    st.write("## LIME Explanation")
+    st.write("## LIME Explanation for CatBoost Model")
     instance = features_df.iloc[0].values
     explain_with_lime(instance)
