@@ -3,7 +3,6 @@ import pickle
 import numpy as np
 import shap
 import matplotlib.pyplot as plt
-from lime.lime_tabular import LimeTabularExplainer
 from catboost import CatBoostClassifier
 from lightgbm import LGBMClassifier
 from xgboost import XGBClassifier
@@ -148,23 +147,16 @@ if submit_button:
     
     # Plot SHAP waterfall for the first instance
     fig, ax = plt.subplots()
-    shap.waterfall_plot(shap_values[0])
+    shap.waterfall_plot(shap_values[0], feature_names=[
+        'gender',
+        'age',
+        'hypertension',
+        'heart_disease',
+        'ever_married',
+        'work_type',
+        'Residence_type',
+        'avg_glucose_level',
+        'bmi',
+        'smoking_status'
+    ])
     st.pyplot(fig)
-    
-    # LIME explanation for CatBoost
-    st.write("## LIME Explanation for CatBoost Model")
-    
-    explainer_lime = LimeTabularExplainer(
-        training_data=np.array([list(data_mapped.values())]),  # Use your training data
-        feature_names=feature_names,
-        class_names=['No Stroke', 'Stroke'],
-        mode='classification'
-    )
-    
-    explanation_lime = explainer_lime.explain_instance(
-        data_row=features_array[0],
-        predict_fn=catboost_model.predict_proba
-    )
-    
-    fig_lime = explanation_lime.as_pyplot_figure()
-    st.pyplot(fig_lime)
