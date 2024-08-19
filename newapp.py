@@ -52,6 +52,10 @@ st.markdown("""
 
 st.title('Brain Stroke Prediction App')
 
+# Initialize session state for selected model
+if 'selected_model' not in st.session_state:
+    st.session_state.selected_model = 'CatBoost'
+
 # Input form
 with st.form(key='prediction_form'):
     col1, col2, col3 = st.columns(3)
@@ -165,19 +169,18 @@ if submit_button:
     
     with col1:
         if st.button('CatBoost XAI'):
-            selected_model = 'CatBoost'
+            st.session_state.selected_model = 'CatBoost'
     with col2:
         if st.button('LightGBM XAI'):
-            selected_model = 'LightGBM'
+            st.session_state.selected_model = 'LightGBM'
     with col3:
         if st.button('XGBoost XAI'):
-            selected_model = 'XGBoost'
+            st.session_state.selected_model = 'XGBoost'
     with col4:
         if st.button('Gradient Boosting XAI'):
-            selected_model = 'Gradient Boosting'
+            st.session_state.selected_model = 'Gradient Boosting'
     
-    if 'selected_model' not in locals():
-        selected_model = 'CatBoost'  # Default to CatBoost XAI
+    selected_model = st.session_state.selected_model
 
     if selected_model == 'CatBoost':
         st.write("### SHAP Explanation for CatBoost Model")
