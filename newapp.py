@@ -1,12 +1,12 @@
 import streamlit as st
 import pickle
 import numpy as np
-import shap
 import pandas as pd
-from lime.lime_tabular import LimeTabularExplainer
+import shap
 import matplotlib.pyplot as plt
+from lime.lime_tabular import LimeTabularExplainer
 
-# Load models
+# Load the models
 with open('catboost_model1.pkl', 'rb') as file:
     catboost_model = pickle.load(file)
 
@@ -18,6 +18,20 @@ with open('xgb_model1.pkl', 'rb') as file:
 
 with open('gbm_model1.pkl', 'rb') as file:
     gbm_model = pickle.load(file)
+
+# Bootstrap styling and layout
+st.markdown("""
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .input-group { margin-bottom: 15px; }
+        .prediction-box { padding: 10px; border-radius: 5px; margin-bottom: 10px; cursor: pointer; text-align: center; }
+        .green { background-color: #28a745; color: white; }
+        .red { background-color: #dc3545; color: white; }
+        .prediction-row { display: flex; justify-content: space-around; }
+        .xai-container { margin-top: 30px; }
+        .xai-graphs { margin-top: 15px; }
+    </style>
+""", unsafe_allow_html=True)
 
 # Function to predict using all models
 def predict_stroke(features_array):
@@ -33,22 +47,20 @@ def predict_stroke(features_array):
         predictions[name] = pred
     return predictions
 
-# Function to display SHAP and LIME plots for the chosen model
-def display_xai(model_name, model, features_array):
-    st.write(f"### XAI for {model_name}")
-    
-    # SHAP
-    st.write("#### SHAP Waterfall Plot")
-    explainer = shap.Explainer(model)
-    shap_values = explainer(pd.DataFrame(features_array, columns=feature_names))
-    shap.plots.waterfall(shap_values[0])
-    
-    # LIME
-    st.write("#### LIME Explanation")
-    explainer = LimeTabularExplainer(training_data=features_array, feature_names=feature_names, class_names=['No Stroke', 'Stroke'], mode='classification')
-    explanation = explainer.explain_instance(features_array[0], model.predict_proba)
-    fig = explanation.as_pyplot_figure()
-    st.pyplot(fig)
+# Map categorical values to numerical values
+def map_data(data):
+    return {
+        'gender': 0 if data['gender'] == 'Male' else 1,
+        'age': data['age'],
+        'hypertension': data['hypertension'],
+        'heart_disease': data['heart_disease'],
+        'ever_married': 1 if data['ever_married'] == 'Yes' else 0,
+        'work_type': {'Govt_job': 0, 'Never_worked': 1, 'Private': 2, 'Self_employed': 3, 'children': 4}[data['work_type']],
+        'Residence_type': 0 if data['residence_type'] == 'Rural' else 1,
+        'avg_glucose_level': data['avg_glucose_level'],
+        'bmi': data['bmi'],
+        'smoking_status': {'Unknown': 0, 'formerly smoked': 1, 'never smoked': 2, 'smokes': 3}[data['smoking_status']]
+    }
 
 # Streamlit app
 st.title('Brain Stroke Prediction App')
@@ -82,25 +94,10 @@ with st.form(key='prediction_form'):
     col10, col11 = st.columns(2)
     with col10:
         smoking_status = st.selectbox('Smoking Status', ['Unknown', 'formerly smoked', 'never smoked', 'smokes'])
-
+    
     submit_button = st.form_submit_button(label='Predict')
 
-# Map categorical values to numerical values
-def map_data(data):
-    return {
-        'gender': 0 if data['gender'] == 'Male' else 1,
-        'age': data['age'],
-        'hypertension': data['hypertension'],
-        'heart_disease': data['heart_disease'],
-        'ever_married': 1 if data['ever_married'] == 'Yes' else 0,
-        'work_type': {'Govt_job': 0, 'Never_worked': 1, 'Private': 2, 'Self_employed': 3, 'children': 4}[data['work_type']],
-        'Residence_type': 0 if data['residence_type'] == 'Rural' else 1,
-        'avg_glucose_level': data['avg_glucose_level'],
-        'bmi': data['bmi'],
-        'smoking_status': {'Unknown': 0, 'formerly smoked': 1, 'never smoked': 2, 'smokes': 3}[data['smoking_status']]
-    }
-
-# Prediction process
+# Make predictions
 if submit_button:
     input_data = {
         'gender': gender,
@@ -114,14 +111,66 @@ if submit_button:
         'bmi': bmi,
         'smoking_status': smoking_status
     }
-    
-    data_mapped = map_data(input_data)
-    features_array = np.array(list(data_mapped.values())).reshape(1, -1)
 
+    data_mapped = map_data(input_data)
+
+    features = [
+        data_mapped['gender'], data_mapped['age'], data_mapped['hypertension'],
+        data_mapped['heart_disease'], data_mapped['ever_married'], data_mapped['work_type'],
+        data_mapped['Residence_type'], data_mapped['avg_glucose_level'], data_mapped['bmi'],
+        data_mapped['smoking_status']
+    ]
+
+    features_array = np.array(features).reshape(1, -1)
+    
     predictions = predict_stroke(features_array)
 
-    # Display prediction boxes
-    st.write("## Predictions (Click to view XAI)")
-    for model_name in predictions.keys():
-        if st.button(f'{model_name}: {"No Stroke" if predictions[model_name] == 0 else "Stroke"}'):
-            display_xai(model_name, globals()[f"{model_name.lower().replace(' ', '_')}_model"], features_array)
+    # Display clickable prediction boxes
+    st.markdown('<h3>Model Predictions:</h3>', unsafe_allow_html=True)
+    prediction_rows = []
+    active_model = 'CatBoost'  # Default active model for XAI display
+    if 'active_model' in st.session_state:
+        active_model = st.session_state['active_model']
+
+    for model_name, pred in predictions.items():
+        color_class = 'green' if pred == 0 else 'red'
+        result = 'No Stroke' if pred == 0 else 'Stroke'
+        clickable = f'<div class="prediction-box {color_class}" onclick="document.getElementById(\'{model_name}\').click();">{model_name}: {result}</div>'
+        prediction_rows.append(clickable)
+
+    st.markdown('<div class="prediction-row">' + ''.join(prediction_rows) + '</div>', unsafe_allow_html=True)
+
+    # XAI Graphs
+    st.markdown('<h3>XAI: Explainability for ' + active_model + '</h3>', unsafe_allow_html=True)
+
+    # SHAP and LIME Explainers
+    explainer_shap = shap.Explainer(catboost_model if active_model == 'CatBoost' else xgb_model)
+    shap_values = explainer_shap(pd.DataFrame(features_array, columns=[
+        'gender', 'age', 'hypertension', 'heart_disease', 'ever_married', 'work_type', 'Residence_type', 
+        'avg_glucose_level', 'bmi', 'smoking_status'
+    ]))
+    
+    st.write('### SHAP Waterfall Plot:')
+    shap.waterfall_plot(shap_values[0])
+    
+    # LIME Explanation
+    explainer_lime = LimeTabularExplainer(
+        training_data=features_array,
+        feature_names=['gender', 'age', 'hypertension', 'heart_disease', 'ever_married', 'work_type', 
+                       'Residence_type', 'avg_glucose_level', 'bmi', 'smoking_status'],
+        mode='classification'
+    )
+    
+    lime_exp = explainer_lime.explain_instance(
+        data_row=features_array[0],
+        predict_fn=catboost_model.predict_proba if active_model == 'CatBoost' else xgb_model.predict_proba
+    )
+    
+    st.write('### LIME Explanation:')
+    fig = lime_exp.as_pyplot_figure()
+    st.pyplot(fig)
+    
+    # Handling click events on the boxes to switch XAI graphs
+    for model_name in ['CatBoost', 'XGBoost']:
+        if st.button(model_name, key=model_name):
+            st.session_state['active_model'] = model_name
