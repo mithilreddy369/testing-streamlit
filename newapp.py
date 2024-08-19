@@ -41,10 +41,18 @@ lime_explainer = lime.lime_tabular.LimeTabularExplainer(
 
 # Function to predict using all models
 def predict_stroke(features_array, model):
-    return model.predict(features_array)[0]
+    if model is not None:
+        return model.predict(features_array)[0]
+    else:
+        st.error("Model is not loaded properly.")
+        return None
 
 # Function to explain with LIME
 def explain_with_lime(instance, model):
+    if model is None:
+        st.error("Model is not loaded properly.")
+        return
+    
     def predict_proba_fn(X):
         return model.predict_proba(X)
     
@@ -120,7 +128,12 @@ with st.form(key='prediction_form'):
     with col10:
         smoking_status = st.selectbox('Smoking Status', ['Unknown', 'formerly smoked', 'never smoked', 'smokes'])
     
-    model_selector = st.selectbox("Select Model for XAI", ["CatBoost  (Model Accuracy - 92.27%) ",  "XGBoost  (Model Accuracy - 90.92%)", "LightGBM  (Model Accuracy - 89.65%)","Gradient Boosting  Boosting (Model Accuracy - 84.18%)"])
+    model_selector = st.selectbox("Select Model for XAI", [
+        "CatBoost  (Model Accuracy - 92.27%)",
+        "XGBoost  (Model Accuracy - 90.92%)",
+        "LightGBM  (Model Accuracy - 89.65%)",
+        "Gradient Boosting  (Model Accuracy - 84.18%)"
+    ])
     submit_button = st.form_submit_button(label='Predict')
 
 # Map categorical values to numerical values
@@ -174,30 +187,31 @@ if submit_button:
     
     # Select the model
     model_dict = {
-        "CatBoost": catboost_model,
-        "XGBoost": xgb_model,
-        "LightGBM": lgb_model,
-        "Gradient": gbm_model
+        "CatBoost  (Model Accuracy - 92.27%)": catboost_model,
+        "XGBoost  (Model Accuracy - 90.92%)": xgb_model,
+        "LightGBM  (Model Accuracy - 89.65%)": lgb_model,
+        "Gradient Boosting  (Model Accuracy - 84.18%)": gbm_model
     }
     selected_model = model_dict.get(model_selector)
 
     # Make predictions
     pred = predict_stroke(features_array, selected_model)
     
-    st.write("## Predictions")
-    color_class = 'green' if pred == 0 else 'red'
-    result = 'No Stroke' if pred == 0 else 'Stroke'
-    st.markdown(f'<div class="prediction-box {color_class}">{model_selector}: {result}</div>', unsafe_allow_html=True)
+    if pred is not None:
+        st.write("## Predictions")
+        color_class = 'green' if pred == 0 else 'red'
+        result = 'No Stroke' if pred == 0 else 'Stroke'
+        st.markdown(f'<div class="prediction-box {color_class}">{model_selector}: {result}</div>', unsafe_allow_html=True)
 
-    # SHAP explanation
-    if model_selector == "CatBoost":
-        st.write(f"## SHAP Explanation for {model_selector} Model")
-        explainer = shap.Explainer(catboost_model)
-        shap_values = explainer(features_df)
-        fig, ax = plt.subplots()
-        shap.plots.waterfall(shap_values[0])
-        st.pyplot(fig)
+        # SHAP explanation
+        if model_selector == "CatBoost  (Model Accuracy - 92.27%)":
+            st.write(f"## SHAP Explanation for {model_selector} Model")
+            explainer = shap.Explainer(catboost_model)
+            shap_values = explainer(features_df)
+            fig, ax = plt.subplots()
+            shap.plots.waterfall(shap_values[0])
+            st.pyplot(fig)
 
-    # LIME explanation
-    st.write(f"## LIME Explanation for {model_selector} Model")
-    explain_with_lime(features_df.iloc[0].values, selected_model)
+        # LIME explanation
+        st.write(f"## LIME Explanation for {model_selector} Model")
+        explain_with_lime(features_df.iloc[0].values, selected_model)
