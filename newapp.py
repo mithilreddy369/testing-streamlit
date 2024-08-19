@@ -2,6 +2,7 @@ import streamlit as st
 import pickle
 import numpy as np
 import shap
+import pandas as pd
 import matplotlib.pyplot as plt
 from catboost import CatBoostClassifier
 from lightgbm import LGBMClassifier
@@ -127,6 +128,23 @@ if submit_button:
     
     features_array = np.array(features).reshape(1, -1)
     
+    # Create a DataFrame with feature names
+    feature_names = [
+        'gender',
+        'age',
+        'hypertension',
+        'heart_disease',
+        'ever_married',
+        'work_type',
+        'Residence_type',
+        'avg_glucose_level',
+        'bmi',
+        'smoking_status'
+    ]
+    
+    features_df = pd.DataFrame(features_array, columns=feature_names)
+    
+    # Make predictions
     predictions = predict_stroke(features_array)
     
     st.write("## Predictions")
@@ -143,9 +161,9 @@ if submit_button:
     st.write("## SHAP Explanation for CatBoost Model")
     
     explainer = shap.Explainer(catboost_model)
-    shap_values = explainer(features_array)
+    shap_values = explainer(features_df)
     
     # Plot SHAP waterfall for the first instance
     fig, ax = plt.subplots()
-    shap.waterfall_plot(shap_values[0])
+    shap.plots.waterfall(shap_values[0])
     st.pyplot(fig)
