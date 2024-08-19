@@ -10,6 +10,15 @@ import lime.lime_tabular
 with open('catboost_model1.pkl', 'rb') as file:
     catboost_model = pickle.load(file)
 
+with open('lgb_model1.pkl', 'rb') as file:
+    lgb_model = pickle.load(file)
+
+with open('xgb_model1.pkl', 'rb') as file:
+    xgb_model = pickle.load(file)
+
+with open('gbm_model1.pkl', 'rb') as file:
+    gbm_model = pickle.load(file)
+
 # Load the training data for LIME
 train_data = pd.read_csv('train_data_for_lime.csv')
 
@@ -35,6 +44,9 @@ def predict_stroke(features_array):
     predictions = {}
     models = {
         'CatBoost': catboost_model,
+        'LightGBM': lgb_model,
+        'XGBoost': xgb_model,
+        'Gradient Boosting': gbm_model
     }
     for name, model in models.items():
         pred = model.predict(features_array)[0]
