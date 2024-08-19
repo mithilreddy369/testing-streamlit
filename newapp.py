@@ -171,51 +171,47 @@ if submit_button:
 
     # XAI explanation buttons
     st.write("## XAI Explanations")
-    col1, col2, col3, col4 = st.columns(4)
     
-    with col1:
-        if st.button('CatBoost XAI'):
-            st.session_state.selected_model = 'CatBoost'
-            st.experimental_rerun()
+    with st.container():
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            if st.button('CatBoost XAI'):
+                st.session_state.selected_model = 'CatBoost'
+                st.experimental_rerun()
 
-    with col2:
-        if st.button('LightGBM XAI'):
-            st.session_state.selected_model = 'LightGBM'
-            st.experimental_rerun()
+        with col2:
+            if st.button('LightGBM XAI'):
+                st.session_state.selected_model = 'LightGBM'
+                st.experimental_rerun()
 
-    with col3:
-        if st.button('XGBoost XAI'):
-            st.session_state.selected_model = 'XGBoost'
-            st.experimental_rerun()
+        with col3:
+            if st.button('XGBoost XAI'):
+                st.session_state.selected_model = 'XGBoost'
+                st.experimental_rerun()
 
-    with col4:
-        if st.button('Gradient Boosting XAI'):
-            st.session_state.selected_model = 'Gradient Boosting'
-            st.experimental_rerun()
+        with col4:
+            if st.button('Gradient Boosting XAI'):
+                st.session_state.selected_model = 'Gradient Boosting'
+                st.experimental_rerun()
     
     selected_model = st.session_state.selected_model
 
+    # Display SHAP explanation for the selected model
     if selected_model == 'CatBoost':
         st.write("### SHAP Explanation for CatBoost Model")
         shap_values = explain_model(catboost_model, features_df)
-        fig, ax = plt.subplots()
-        shap.plots.waterfall(shap_values[0])
-        st.pyplot(fig)
     elif selected_model == 'LightGBM':
         st.write("### SHAP Explanation for LightGBM Model")
         shap_values = explain_model(lgb_model, features_df)
-        fig, ax = plt.subplots()
-        shap.plots.waterfall(shap_values[0])
-        st.pyplot(fig)
     elif selected_model == 'XGBoost':
         st.write("### SHAP Explanation for XGBoost Model")
         shap_values = explain_model(xgb_model, features_df)
-        fig, ax = plt.subplots()
-        shap.plots.waterfall(shap_values[0])
-        st.pyplot(fig)
     elif selected_model == 'Gradient Boosting':
         st.write("### SHAP Explanation for Gradient Boosting Model")
         shap_values = explain_model(gbm_model, features_df)
-        fig, ax = plt.subplots()
-        shap.plots.waterfall(shap_values[0])
-        st.pyplot(fig)
+
+    # Plot the SHAP explanation
+    fig, ax = plt.subplots()
+    shap.plots.waterfall(shap_values[0])
+    st.pyplot(fig)
