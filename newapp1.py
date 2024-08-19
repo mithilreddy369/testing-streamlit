@@ -5,6 +5,7 @@ import shap
 import pandas as pd
 import matplotlib.pyplot as plt
 import lime.lime_tabular
+from sklearn.ensemble import GradientBoostingClassifier
 
 # Load the models
 with open('catboost_model1.pkl', 'rb') as file:
@@ -40,23 +41,21 @@ lime_explainer = lime.lime_tabular.LimeTabularExplainer(
 )
 
 # Function to predict using all models
-def predict_stroke(features_array):
-    predictions = {}
-    models = {
-        'CatBoost': catboost_model,
-        'LightGBM': lgb_model,
-        'XGBoost': xgb_model,
-        'Gradient Boosting': gbm_model
-    }
-    for name, model in models.items():
-        pred = model.predict(features_array)[0]
-        predictions[name] = pred
-    return predictions
+def predict_stroke(features_array, model):
+    if model is not None:
+        return model.predict(features_array)[0]
+    else:
+        st.error("Model is not loaded properly.")
+        return None
 
 # Function to explain with LIME
-def explain_with_lime(instance):
+def explain_with_lime(instance, model):
+    if model is None:
+        st.error("Model is not loaded properly.")
+        return
+    
     def predict_proba_fn(X):
-        return catboost_model.predict_proba(X)
+        return model.predict_proba(X)
     
     exp = lime_explainer.explain_instance(
         data_row=instance,
@@ -85,6 +84,26 @@ def explain_with_lime(instance):
     plt.grid(axis='x', linestyle='--', alpha=0.7)
     plt.tight_layout()
     st.pyplot(plt)
+
+# Function to explain with SHAP
+def explain_with_shap(instance, model, model_name):
+    explainer = None
+    if model_name == "CatBoost  (Model Accuracy - 92.27%)":
+        explainer = shap.Explainer(model)
+    elif model_name == "XGBoost  (Model Accuracy - 90.92%)":
+        explainer = shap.Explainer(model)
+    elif model_name == "LightGBM  (Model Accuracy - 89.65%)":
+        explainer = shap.Explainer(model)
+    elif model_name == "Gradient Boosting  (Model Accuracy - 84.18%)":
+        explainer = shap.Explainer(model)
+    
+    if explainer is not None:
+        shap_values = explainer(instance)
+        fig, ax = plt.subplots()
+        shap.plots.waterfall(shap_values[0])
+        st.pyplot(fig)
+    else:
+        st.error("SHAP explainer not supported for this model.")
 
 # Streamlit app
 st.markdown("""
@@ -130,6 +149,12 @@ with st.form(key='prediction_form'):
     with col10:
         smoking_status = st.selectbox('Smoking Status', ['Unknown', 'formerly smoked', 'never smoked', 'smokes'])
     
+    model_selector = st.selectbox("Select Model for XAI", [
+        "CatBoost  (Model Accuracy - 92.27%)",
+        "XGBoost  (Model Accuracy - 90.92%)",
+        "LightGBM  (Model Accuracy - 89.65%)",
+        "Gradient Boosting  (Model Accuracy - 84.18%)"
+    ])
     submit_button = st.form_submit_button(label='Predict')
 
 # Map categorical values to numerical values
@@ -179,46 +204,30 @@ if submit_button:
     features_array = np.array(features).reshape(1, -1)
     
     # Create a DataFrame with feature names
-    feature_names = [
-        'gender',
-        'age',
-        'hypertension',
-        'heart_disease',
-        'ever_married',
-        'work_type',
-        'Residence_type',
-        'avg_glucose_level',
-        'bmi',
-        'smoking_status'
-    ]
-    
     features_df = pd.DataFrame(features_array, columns=feature_names)
     
-    # Make predictions
-    predictions = predict_stroke(features_array)
-    
-    st.write("## Predictions")
+    # Select the model
+    model_dict = {
+        "CatBoost  (Model Accuracy - 92.27%)": catboost_model,
+        "XGBoost  (Model Accuracy - 90.92%)": xgb_model,
+        "LightGBM  (Model Accuracy - 89.65%)": lgb_model,
+        "Gradient Boosting  (Model Accuracy - 84.18%)": gbm_model
+    }
+    selected_model = model_dict.get(model_selector)
 
-    prediction_rows = []
-    for model_name, pred in predictions.items():
+    # Make predictions
+    pred = predict_stroke(features_array, selected_model)
+    
+    if pred is not None:
+        st.write("## Predictions")
         color_class = 'green' if pred == 0 else 'red'
         result = 'No Stroke' if pred == 0 else 'Stroke'
-        prediction_rows.append(f'<div class="prediction-box {color_class}">{model_name}: {result}</div>')
+        st.markdown(f'<div class="prediction-box {color_class}">{model_selector}: {result}</div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="prediction-row">' + ''.join(prediction_rows) + '</div>', unsafe_allow_html=True)
+        # SHAP explanation
+        st.write(f"## SHAP Explanation for {model_selector} Model")
+        explain_with_shap(features_df, selected_model, model_selector)
 
-    # SHAP explanation for CatBoost
-    st.write("## SHAP Explanation for CatBoost Model")
-    
-    explainer = shap.Explainer(catboost_model)
-    shap_values = explainer(features_df)
-    
-    # Plot SHAP waterfall for the first instance
-    fig, ax = plt.subplots()
-    shap.plots.waterfall(shap_values[0])
-    st.pyplot(fig)
-
-    # LIME explanation
-    st.write("## LIME Explanation for CatBoost Model")
-    instance = features_df.iloc[0].values
-    explain_with_lime(instance)
+        # LIME explanation
+        st.write(f"## LIME Explanation for {model_selector} Model")
+        explain_with_lime(features_df.iloc[0].values, selected_model)
