@@ -52,9 +52,11 @@ st.markdown("""
 
 st.title('Brain Stroke Prediction App')
 
-# Initialize session state for selected model
+# Initialize session state for selected model and form data
 if 'selected_model' not in st.session_state:
     st.session_state.selected_model = 'CatBoost'
+if 'input_data' not in st.session_state:
+    st.session_state.input_data = {}
 
 # Input form
 with st.form(key='prediction_form'):
@@ -88,23 +90,9 @@ with st.form(key='prediction_form'):
     
     submit_button = st.form_submit_button(label='Predict')
 
-# Map categorical values to numerical values
-def map_data(data):
-    return {
-        'gender': 0 if data['gender'] == 'Male' else 1,
-        'age': data['age'],
-        'hypertension': data['hypertension'],
-        'heart_disease': data['heart_disease'],
-        'ever_married': 1 if data['ever_married'] == 'Yes' else 0,
-        'work_type': {'Govt_job': 0, 'Never_worked': 1, 'Private': 2, 'Self_employed': 3, 'children': 4}[data['work_type']],
-        'Residence_type': 0 if data['residence_type'] == 'Rural' else 1,
-        'avg_glucose_level': data['avg_glucose_level'],
-        'bmi': data['bmi'],
-        'smoking_status': {'Unknown': 0, 'formerly smoked': 1, 'never smoked': 2, 'smokes': 3}[data['smoking_status']]
-    }
-
+# Handle form submission
 if submit_button:
-    input_data = {
+    st.session_state.input_data = {
         'gender': gender,
         'age': age,
         'hypertension': hypertension,
@@ -116,9 +104,12 @@ if submit_button:
         'bmi': bmi,
         'smoking_status': smoking_status
     }
-    
+    st.experimental_rerun()
+
+# Process input data
+input_data = st.session_state.input_data
+if input_data:
     data_mapped = map_data(input_data)
-    
     features = [
         data_mapped['gender'],
         data_mapped['age'],
@@ -131,7 +122,6 @@ if submit_button:
         data_mapped['bmi'],
         data_mapped['smoking_status']
     ]
-    
     features_array = np.array(features).reshape(1, -1)
     
     # Create a DataFrame with feature names
@@ -147,22 +137,19 @@ if submit_button:
         'bmi',
         'smoking_status'
     ]
-    
     features_df = pd.DataFrame(features_array, columns=feature_names)
     
     # Make predictions
     predictions = predict_stroke(features_array)
     
     st.write("## Predictions")
-
     prediction_rows = []
     for model_name, pred in predictions.items():
         color_class = 'green' if pred == 0 else 'red'
         result = 'No Stroke' if pred == 0 else 'Stroke'
         prediction_rows.append(f'<div class="prediction-box {color_class}">{model_name}: {result}</div>')
-
     st.markdown('<div class="prediction-row">' + ''.join(prediction_rows) + '</div>', unsafe_allow_html=True)
-
+    
     # XAI explanation buttons
     st.write("## XAI Explanations")
     col1, col2, col3, col4 = st.columns(4)
@@ -170,18 +157,22 @@ if submit_button:
     with col1:
         if st.button('CatBoost XAI'):
             st.session_state.selected_model = 'CatBoost'
+            st.experimental_rerun()
     with col2:
         if st.button('LightGBM XAI'):
             st.session_state.selected_model = 'LightGBM'
+            st.experimental_rerun()
     with col3:
         if st.button('XGBoost XAI'):
             st.session_state.selected_model = 'XGBoost'
+            st.experimental_rerun()
     with col4:
         if st.button('Gradient Boosting XAI'):
             st.session_state.selected_model = 'Gradient Boosting'
+            st.experimental_rerun()
     
     selected_model = st.session_state.selected_model
-
+    
     if selected_model == 'CatBoost':
         st.write("### SHAP Explanation for CatBoost Model")
         explainer = shap.Explainer(catboost_model)
