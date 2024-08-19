@@ -6,7 +6,7 @@ from lightgbm import LGBMClassifier
 from xgboost import XGBClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 
-# Load the models
+# Load the models 
 with open('catboost_model1.pkl', 'rb') as file:
     catboost_model = pickle.load(file)
 
