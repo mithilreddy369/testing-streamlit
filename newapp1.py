@@ -4,12 +4,9 @@ import numpy as np
 import shap
 import pandas as pd
 import matplotlib.pyplot as plt
-from catboost import CatBoostClassifier
-from lightgbm import LGBMClassifier
-from xgboost import XGBClassifier
-from sklearn.ensemble import GradientBoostingClassifier
+import lime.lime_tabular
 
-# Load the models 
+# Load the models
 with open('catboost_model1.pkl', 'rb') as file:
     catboost_model = pickle.load(file)
 
@@ -21,6 +18,26 @@ with open('xgb_model1.pkl', 'rb') as file:
 
 with open('gbm_model1.pkl', 'rb') as file:
     gbm_model = pickle.load(file)
+
+# Load the training data for LIME
+train_data = pd.read_csv('train_data_for_lime.csv')
+
+# Define feature names
+feature_names = [
+    'gender', 'age', 'hypertension', 'heart_disease', 'ever_married',
+    'work_type', 'Residence_type', 'avg_glucose_level', 'bmi', 'smoking_status'
+]
+
+# Prepare training data for LIME
+X_train = train_data[feature_names]
+
+# Create a LIME explainer
+lime_explainer = lime.lime_tabular.LimeTabularExplainer(
+    training_data=X_train.values,
+    feature_names=feature_names,
+    class_names=['no_stroke', 'stroke'],
+    mode='classification'
+)
 
 # Function to predict using all models
 def predict_stroke(features_array):
@@ -35,6 +52,39 @@ def predict_stroke(features_array):
         pred = model.predict(features_array)[0]
         predictions[name] = pred
     return predictions
+
+# Function to explain with LIME
+def explain_with_lime(instance):
+    def predict_proba_fn(X):
+        return catboost_model.predict_proba(X)
+    
+    exp = lime_explainer.explain_instance(
+        data_row=instance,
+        predict_fn=predict_proba_fn
+    )
+    
+    explanation_list = exp.as_list()
+    explanation_df = pd.DataFrame(explanation_list, columns=['feature', 'weight'])
+    
+    # Plot customization with Matplotlib (Stacked Bar Chart)
+    plt.figure(figsize=(7,6))
+    explanation_df = explanation_df.sort_values(by='weight')
+    bars = plt.barh(explanation_df['feature'], explanation_df['weight'], color='skyblue', edgecolor='black')
+
+    for bar in bars:
+        plt.text(
+            bar.get_width() + 0.01,
+            bar.get_y() + bar.get_height()/2,
+            round(bar.get_width(), 2),
+            va='center'
+        )
+    
+    plt.xlabel('Contribution to Prediction')
+    plt.ylabel('Feature')
+    plt.title('LIME Explanation for Instance')
+    plt.grid(axis='x', linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    st.pyplot(plt)
 
 # Streamlit app
 st.markdown("""
@@ -167,3 +217,8 @@ if submit_button:
     fig, ax = plt.subplots()
     shap.plots.waterfall(shap_values[0])
     st.pyplot(fig)
+
+    # LIME explanation
+    st.write("## LIME Explanation for CatBoost Model")
+    instance = features_df.iloc[0].values
+    explain_with_lime(instance)
