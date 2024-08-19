@@ -85,32 +85,29 @@ def explain_with_lime(instance, model):
     plt.tight_layout()
     st.pyplot(plt)
 
-def explain_with_shap(features_df, model, model_name):
-    # Define a prediction function for SHAP
-    def predict_fn(X):
-        return model.predict_proba(X)
-
-    # Use SHAP Explainer based on the model type
+# Function to explain with SHAP
+def explain_with_shap(instance, model, model_name):
+    explainer = None
     if model_name == "CatBoost  (Model Accuracy - 92.27%)":
         explainer = shap.Explainer(model)
-        shap_values = explainer(features_df)
-        shap.summary_plot(shap_values, features_df, plot_type="bar")
     elif model_name == "XGBoost  (Model Accuracy - 90.92%)":
         explainer = shap.Explainer(model)
-        shap_values = explainer(features_df)
-        shap.summary_plot(shap_values, features_df, plot_type="bar")
     elif model_name == "LightGBM  (Model Accuracy - 89.65%)":
         explainer = shap.Explainer(model)
-        shap_values = explainer(features_df)
-        shap.summary_plot(shap_values, features_df, plot_type="bar")
     elif model_name == "Gradient Boosting  (Model Accuracy - 84.18%)":
-        # Use KernelExplainer for Gradient Boosting
-        explainer = shap.KernelExplainer(predict_fn, features_df.sample(100, random_state=0))
-        shap_values = explainer.shap_values(features_df)
-        shap.summary_plot(shap_values, features_df, plot_type="bar")
-
-    st.pyplot()
+        explainer = shap.Explainer(model)
     
+    if explainer is not None:
+        shap_values = explainer(instance)
+        fig, ax = plt.subplots()
+        if model_name == "Gradient Boosting  (Model Accuracy - 84.18%)":
+            shap.summary_plot(shap_values, features_df, plot_type="bar")
+        else:
+            shap.plots.waterfall(shap_values[0])
+        st.pyplot(fig)
+    else:
+        st.error("SHAP explainer not supported for this model.")
+
 # Streamlit app
 st.markdown("""
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
