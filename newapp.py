@@ -147,16 +147,5 @@ if submit_button:
     
     # Plot SHAP waterfall for the first instance
     fig, ax = plt.subplots()
-    shap.waterfall_plot(shap_values[0], feature_names=[
-        'gender',
-        'age',
-        'hypertension',
-        'heart_disease',
-        'ever_married',
-        'work_type',
-        'Residence_type',
-        'avg_glucose_level',
-        'bmi',
-        'smoking_status'
-    ])
+    shap.waterfall_plot(shap_values[0])
     st.pyplot(fig)
