@@ -174,10 +174,10 @@ if submit_button:
     
     # Select the model
     model_dict = {
-        "CatBoost": catboost_model,
-        "LightGBM": lgb_model,
-        "XGBoost": xgb_model,
-        "Gradient Boosting": gbm_model
+        "CatBoost (Model Accuracy - 92.27%) ": catboost_model,
+        "XGBoost (Model Accuracy - 90.92%)": xgb_model,
+        "LightGBM (Model Accuracy - 89.65%)": lgb_model,
+        "Gradient Boosting (Model Accuracy - 84.18%)": gbm_model
     }
     selected_model = model_dict.get(model_selector)
 
@@ -191,7 +191,7 @@ if submit_button:
 
     # SHAP explanation
     if model_selector == "CatBoost":
-        st.write("## SHAP Explanation for CatBoost Model")
+        st.write("## SHAP Explanation for {model_selector} Model")
         explainer = shap.Explainer(catboost_model)
         shap_values = explainer(features_df)
         fig, ax = plt.subplots()
