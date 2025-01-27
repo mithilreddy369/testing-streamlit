@@ -1,7 +1,6 @@
 import streamlit as st
 import numpy as np
-import pickle
-from feature_engineering import feature_engineering  # Ensure this is used if needed
+import joblib  # Updated to use joblib for loading LightGBM model
 from css import add_custom_css  # Ensure this is correctly implemented
 
 # Apply custom CSS
@@ -9,21 +8,15 @@ add_custom_css()
 
 def load_model(file_path):
     try:
-        with open(file_path, 'rb') as file:
-            model = pickle.load(file)
+        model = joblib.load(file_path)  # Load model using joblib
         return model
-    except pickle.UnpicklingError as e:
-        st.error(f"Error loading {file_path}: {e}")
     except FileNotFoundError as e:
         st.error(f"File not found: {file_path}")
     except Exception as e:
         st.error(f"An unexpected error occurred: {e}")
 
-# Load models
-catboost_model = load_model('catboost_model1.pkl')
-lgb_model = load_model('lgb_model1.pkl')
-xgb_model = load_model('xgb_model1.pkl')
-gbm_model = load_model('gbm_model1.pkl')
+# Load the LightGBM model
+lgb_model = load_model('lgb_model.joblib')
 
 # Function to center content
 def center_content():
@@ -106,61 +99,26 @@ input_data = np.array(list(features.values())).reshape(1, -1)
 
 # Prediction
 if submit_button:
-    try:
-        # Get predictions from all models
-        catboost_prob = catboost_model.predict_proba(input_data)[0][1]
-        lgb_prob = lgb_model.predict_proba(input_data)[0][1]
-        xgb_prob = xgb_model.predict_proba(input_data)[0][1]
-        gbm_prob = gbm_model.predict_proba(input_data)[0][1]
+    if lgb_model:
+        try:
+            # Get prediction probability from the LightGBM model
+            lgb_prob = lgb_model.predict_proba(input_data)[0][1]
 
-        predictions = {
-            'CatBoost Model': 'Stroke' if catboost_prob > 0.5 else 'No Stroke',
-            'LightGBM Model': 'Stroke' if lgb_prob > 0.5 else 'No Stroke',
-            'XGBoost Model': 'Stroke' if xgb_prob > 0.5 else 'No Stroke',
-            'Gradient Boosting Model': 'Stroke' if gbm_prob > 0.5 else 'No Stroke'
-        }
+            # Determine the prediction result
+            prediction = 'Stroke' if lgb_prob > 0.5 else 'No Stroke'
 
-        # Display predictions side by side
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            color = 'success' if predictions['CatBoost Model'] == 'No Stroke' else 'danger'
+            # Display the prediction
+            color = 'success' if prediction == 'No Stroke' else 'danger'
             st.markdown(f"""
             <div class="alert alert-{color}" role="alert">
-                <h4 class="alert-heading">CatBoost Model</h4>
-                <p>{predictions['CatBoost Model']}</p>
+                <h4 class="alert-heading">LightGBM Model Prediction</h4>
+                <p>{prediction}</p>
             </div>
             """, unsafe_allow_html=True)
-        
-        with col2:
-            color = 'success' if predictions['LightGBM Model'] == 'No Stroke' else 'danger'
-            st.markdown(f"""
-            <div class="alert alert-{color}" role="alert">
-                <h4 class="alert-heading">LightGBM Model</h4>
-                <p>{predictions['LightGBM Model']}</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-        with col3:
-            color = 'success' if predictions['XGBoost Model'] == 'No Stroke' else 'danger'
-            st.markdown(f"""
-            <div class="alert alert-{color}" role="alert">
-                <h4 class="alert-heading">XGBoost Model</h4>
-                <p>{predictions['XGBoost Model']}</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-        with col4:
-            color = 'success' if predictions['Gradient Boosting Model'] == 'No Stroke' else 'danger'
-            st.markdown(f"""
-            <div class="alert alert-{color}" role="alert">
-                <h4 class="alert-heading">Gradient Boosting</h4>
-                <p>{predictions['Gradient Boosting Model']}</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-    except Exception as e:
-        st.error(f"Error making prediction: {e}")
+        except Exception as e:
+            st.error(f"Error making prediction: {e}")
+    else:
+        st.error("LightGBM model could not be loaded.")
 
 # End centered content
 st.markdown('</div>', unsafe_allow_html=True)
